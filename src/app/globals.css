@@ -1,0 +1,454 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-sand-50 text-sand-900 transition-colors duration-300;
+  }
+
+  .dark body,
+  html.dark body {
+    @apply bg-dark-950 text-sand-100;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Premium Card Style */
+  .card {
+    @apply bg-white rounded-2xl shadow-card transition-all duration-300;
+  }
+
+  .dark .card {
+    @apply bg-dark-900 shadow-card-dark border border-dark-800;
+  }
+
+  .card:hover {
+    @apply shadow-card-hover;
+  }
+
+  .dark .card:hover {
+    @apply shadow-card-dark-hover;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-sand-100;
+  }
+
+  .dark .card-header {
+    @apply border-dark-800;
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 active:scale-[0.98];
+  }
+
+  .btn-primary {
+    @apply bg-fairway-gradient text-white shadow-lg shadow-fairway-500/20 hover:shadow-xl hover:shadow-fairway-500/30;
+  }
+
+  .dark .btn-primary {
+    @apply bg-fairway-gradient-dark shadow-fairway-500/10 hover:shadow-fairway-500/20;
+  }
+
+  .btn-gold {
+    @apply bg-gold-gradient text-fairway-900 shadow-lg shadow-gold-500/20 hover:shadow-xl hover:shadow-gold-500/30;
+  }
+
+  .dark .btn-gold {
+    @apply bg-teal-gradient-dark text-white shadow-teal-900/30 hover:shadow-teal-900/40;
+  }
+
+  .btn-outline {
+    @apply border-2 border-fairway-500 text-fairway-600 hover:bg-fairway-50;
+  }
+
+  .dark .btn-outline {
+    @apply border-fairway-400 text-fairway-400 hover:bg-fairway-900/30;
+  }
+
+  .btn-ghost {
+    @apply text-sand-600 hover:bg-sand-100;
+  }
+
+  .dark .btn-ghost {
+    @apply text-sand-400 hover:bg-dark-800;
+  }
+
+  /* Form Inputs */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-sand-200 bg-white text-sand-900 placeholder:text-sand-400 transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-fairway-500/20 focus:border-fairway-500;
+  }
+
+  .dark .input {
+    @apply border-dark-700 bg-dark-900 text-sand-100 placeholder:text-sand-600;
+    @apply focus:ring-fairway-400/20 focus:border-fairway-400;
+  }
+
+  .input-label {
+    @apply block text-sm font-medium text-sand-700 mb-2;
+  }
+
+  .dark .input-label {
+    @apply text-sand-300;
+  }
+
+  /* Score Display */
+  .score-circle {
+    @apply w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-colors;
+  }
+
+  .score-eagle {
+    @apply bg-eagle/10 text-eagle ring-2 ring-eagle/30;
+  }
+
+  .dark .score-eagle {
+    @apply bg-eagle/20 text-blue-400 ring-blue-400/40;
+  }
+
+  .score-birdie {
+    @apply bg-birdie/10 text-birdie ring-2 ring-birdie/30;
+  }
+
+  .dark .score-birdie {
+    @apply bg-birdie/20 text-emerald-400 ring-emerald-400/40;
+  }
+
+  .score-par {
+    @apply bg-par/10 text-par;
+  }
+
+  .dark .score-par {
+    @apply bg-gray-500/20 text-gray-400;
+  }
+
+  .score-bogey {
+    @apply bg-bogey/10 text-bogey;
+  }
+
+  .dark .score-bogey {
+    @apply bg-amber-500/20 text-amber-400;
+  }
+
+  .score-double {
+    @apply bg-double/10 text-double;
+  }
+
+  .dark .score-double {
+    @apply bg-red-500/20 text-red-400;
+  }
+
+  .score-worse {
+    @apply bg-worse/10 text-worse;
+  }
+
+  .dark .score-worse {
+    @apply bg-orange-900/20 text-orange-400;
+  }
+
+  /* Leaderboard */
+  .leaderboard-row {
+    @apply flex items-center gap-4 px-4 py-3 border-b border-sand-100 last:border-b-0 transition-colors;
+  }
+
+  .dark .leaderboard-row {
+    @apply border-dark-800;
+  }
+
+  .leaderboard-position {
+    @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold;
+  }
+
+  .leaderboard-first {
+    @apply bg-gold-gradient text-fairway-900;
+  }
+
+  .dark .leaderboard-first {
+    @apply bg-teal-gradient-dark text-white;
+  }
+
+  .leaderboard-second {
+    @apply bg-sand-300 text-sand-800;
+  }
+
+  .dark .leaderboard-second {
+    @apply bg-dark-500 text-sand-200;
+  }
+
+  .leaderboard-third {
+    @apply bg-amber-700 text-white;
+  }
+
+  .dark .leaderboard-third {
+    @apply bg-amber-600;
+  }
+
+  /* Stat Card */
+  .stat-card {
+    @apply bg-white rounded-xl p-4 border border-sand-100 transition-colors;
+  }
+
+  .dark .stat-card {
+    @apply bg-dark-900 border-dark-800;
+  }
+
+  .stat-value {
+    @apply text-3xl font-bold text-fairway-700 font-display;
+  }
+
+  .dark .stat-value {
+    @apply text-fairway-400;
+  }
+
+  .stat-label {
+    @apply text-sm text-sand-500 mt-1;
+  }
+
+  .dark .stat-label {
+    @apply text-sand-500;
+  }
+
+  /* Golf Hole */
+  .hole-card {
+    @apply bg-white rounded-2xl p-6 border border-sand-100 transition-all duration-300;
+  }
+
+  .dark .hole-card {
+    @apply bg-dark-900 border-dark-800;
+  }
+
+  .hole-card.active {
+    @apply border-fairway-500 shadow-lg shadow-fairway-500/10;
+  }
+
+  .dark .hole-card.active {
+    @apply border-fairway-400 shadow-fairway-400/10;
+  }
+
+  .hole-number {
+    @apply w-10 h-10 rounded-full bg-fairway-500 text-white flex items-center justify-center font-bold text-lg;
+  }
+
+  .dark .hole-number {
+    @apply bg-fairway-600;
+  }
+
+  /* Avatar */
+  .avatar {
+    @apply w-10 h-10 rounded-full bg-fairway-100 flex items-center justify-center text-fairway-600 font-semibold transition-colors;
+  }
+
+  .dark .avatar {
+    @apply bg-fairway-900/50 text-fairway-400;
+  }
+
+  .avatar-lg {
+    @apply w-16 h-16 text-xl;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors;
+  }
+
+  .badge-green {
+    @apply bg-fairway-100 text-fairway-700;
+  }
+
+  .dark .badge-green {
+    @apply bg-fairway-900/40 text-fairway-400;
+  }
+
+  .badge-gold {
+    @apply bg-gold-100 text-gold-700;
+  }
+
+  .dark .badge-gold {
+    @apply bg-gold-900/40 text-gold-400;
+  }
+
+  .badge-red {
+    @apply bg-red-100 text-red-700;
+  }
+
+  .dark .badge-red {
+    @apply bg-red-900/40 text-red-400;
+  }
+
+  /* Tab Navigation */
+  .tab-nav {
+    @apply flex gap-1 p-1 bg-sand-100 rounded-xl transition-colors;
+  }
+
+  .dark .tab-nav {
+    @apply bg-dark-800;
+  }
+
+  .tab-item {
+    @apply px-4 py-2 rounded-lg text-sm font-medium text-sand-600 transition-all duration-200;
+  }
+
+  .dark .tab-item {
+    @apply text-sand-400;
+  }
+
+  .tab-item.active {
+    @apply bg-white text-fairway-700 shadow-sm;
+  }
+
+  .dark .tab-item.active {
+    @apply bg-dark-900 text-fairway-400;
+  }
+
+  .tab-item:not(.active):hover {
+    @apply text-sand-800;
+  }
+
+  .dark .tab-item:not(.active):hover {
+    @apply text-sand-200;
+  }
+}
+
+@layer utilities {
+  /* Glass effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-lg;
+  }
+
+  .dark .glass {
+    @apply bg-dark-900/80;
+  }
+
+  /* Text gradient */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-fairway-gradient;
+  }
+
+  .dark .text-gradient {
+    @apply bg-fairway-gradient-dark;
+  }
+
+  /* Subtle pattern background */
+  .pattern-dots {
+    background-image: radial-gradient(#d4c4a5 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .dark .pattern-dots {
+    background-image: radial-gradient(#334155 1px, transparent 1px);
+  }
+
+  /* Smooth scroll */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Animation delays */
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+  .delay-500 {
+    animation-delay: 500ms;
+  }
+}
+
+/* Animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Custom scrollbar for main content */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f3ede1;
+  border-radius: 4px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d4c4a5;
+  border-radius: 4px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #b8a07a;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Prevent flash on page load */
+html {
+  color-scheme: light dark;
+}

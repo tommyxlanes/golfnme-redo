@@ -1,0 +1,310 @@
+// Golf Score Tracker - Database Schema
+// Prisma ORM with PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  username       String?   @unique
+  passwordHash   String?
+  avatarUrl      String?
+  image          String?
+  emailVerified  DateTime?
+  handicap       Float?
+  homeCourseId   String?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  homeCourse        Course?         @relation("HomeCourse", fields: [homeCourseId], references: [id], onDelete: SetNull)
+  rounds            Round[]
+  scores            Score[]
+  sentRequests      FriendRequest[] @relation("SentRequests")
+  receivedRequests  FriendRequest[] @relation("ReceivedRequests")
+  friendsAsUser1    Friendship[]    @relation("FriendshipUser1")
+  friendsAsUser2    Friendship[]    @relation("FriendshipUser2")
+  hostedSessions    GroupSession[]  @relation("SessionHost")
+  sessionMembers    SessionMember[]
+  chatMessages      ChatMessage[]
+  accounts          Account[]
+  sessions          Session[]
+
+  @@index([email])
+  @@index([username])
+}
+
+// ============================================
+// NEXTAUTH TABLES
+// Required by @auth/prisma-adapter with PostgreSQL
+// ============================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// FRIENDS SYSTEM
+// ============================================
+
+model FriendRequest {
+  id          String        @id @default(cuid())
+  senderId    String
+  receiverId  String
+  status      RequestStatus @default(PENDING)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  sender    User @relation("SentRequests",      fields: [senderId],   references: [id], onDelete: Cascade)
+  receiver  User @relation("ReceivedRequests",  fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+}
+
+model Friendship {
+  id        String   @id @default(cuid())
+  user1Id   String
+  user2Id   String
+  createdAt DateTime @default(now())
+
+  user1 User @relation("FriendshipUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2 User @relation("FriendshipUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+
+  @@unique([user1Id, user2Id])
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+// ============================================
+// COURSES & HOLES
+// ============================================
+
+model Course {
+  id        String  @id @default(cuid())
+  name      String
+  city      String?
+  state     String?
+  country   String  @default("USA")
+  address   String?
+  latitude  Float?
+  longitude Float?
+
+  par      Int    @default(72)
+  numHoles Int    @default(18)
+  rating   Float?
+  slope    Int?
+
+  imageUrl String?
+  isPublic Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  holes         Hole[]
+  rounds        Round[]
+  homeUsers     User[]         @relation("HomeCourse")
+  groupSessions GroupSession[]
+
+  @@index([name])
+  @@index([city, state])
+}
+
+model Hole {
+  id           String @id @default(cuid())
+  courseId     String
+  holeNumber   Int
+  par          Int
+  yardage      Int?
+  handicapRank Int?
+
+  course Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  scores Score[]
+
+  @@unique([courseId, holeNumber])
+  @@index([courseId])
+}
+
+// ============================================
+// ROUNDS & SCORES
+// ============================================
+
+model Round {
+  id        String  @id @default(cuid())
+  userId    String
+  courseId  String
+  sessionId String?
+
+  playedAt    DateTime @default(now())
+  weather     String?
+  notes       String?
+
+  totalScore  Int?
+  totalPutts  Int?
+  fairwaysHit Int?
+  greensInReg Int?
+
+  status RoundStatus @default(IN_PROGRESS)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User          @relation(fields: [userId],   references: [id], onDelete: Cascade)
+  course  Course        @relation(fields: [courseId], references: [id])
+  session GroupSession? @relation(fields: [sessionId], references: [id])
+  scores  Score[]
+
+  @@index([userId, status, playedAt(sort: Desc)])
+  @@index([sessionId, status])
+}
+
+model Score {
+  id      String @id @default(cuid())
+  roundId String
+  holeId  String
+  userId  String
+
+  strokes    Int
+  putts      Int?
+  fairwayHit Boolean?
+  greenInReg Boolean?
+  penalties  Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  round Round @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  hole  Hole  @relation(fields: [holeId],  references: [id])
+  user  User  @relation(fields: [userId],  references: [id], onDelete: Cascade)
+
+  @@unique([roundId, holeId, userId])
+  @@index([roundId])
+}
+
+enum RoundStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+// ============================================
+// GROUP SESSIONS (Real-time Multiplayer)
+// ============================================
+
+model GroupSession {
+  id         String        @id @default(cuid())
+  hostId     String
+  courseId   String
+  name       String?
+  inviteCode String        @unique
+
+  status     SessionStatus @default(WAITING)
+  maxPlayers Int           @default(4)
+
+  startedAt DateTime?
+  endedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  host     User            @relation("SessionHost", fields: [hostId],   references: [id])
+  course   Course          @relation(fields: [courseId], references: [id])
+  members  SessionMember[]
+  rounds   Round[]
+  chatMessages ChatMessage[]
+
+  @@index([hostId, status])
+  @@index([inviteCode])
+}
+
+model SessionMember {
+  id        String   @id @default(cuid())
+  sessionId String
+  userId    String
+  joinedAt  DateTime @default(now())
+  isReady   Boolean  @default(false)
+
+  session GroupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId],    references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([sessionId])
+}
+
+enum SessionStatus {
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================
+// CHAT MESSAGES
+// ============================================
+
+model ChatMessage {
+  id        String @id @default(cuid())
+  sessionId String
+  userId    String
+  userName  String
+  text      String
+
+  createdAt DateTime @default(now())
+
+  session GroupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId],    references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}

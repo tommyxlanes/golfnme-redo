@@ -1,0 +1,66 @@
+# ===============================
+# Node / Next.js
+# ===============================
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# ===============================
+# Environment variables
+# ===============================
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.sentry-build-plugin
+
+# ===============================
+# Prisma
+# ===============================
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations/**/migration_lock.toml
+
+# ===============================
+# Logs
+# ===============================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# ===============================
+# OS / Editor
+# ===============================
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
+
+# ===============================
+# TypeScript
+# ===============================
+*.tsbuildinfo
+
+# ===============================
+# Testing
+# ===============================
+coverage/
+
+# ===============================
+# Temporary / Cache
+# ===============================
+.cache/
+.tmp/
+temp/
+
+# ===============================
+# Uploads (if applicable)
+# ===============================
+uploads/
+public/uploads/
