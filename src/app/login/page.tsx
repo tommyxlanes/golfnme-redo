@@ -62,14 +62,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-sand-50 dark:bg-dark-950 flex flex-col transition-colors">
+    <div className="min-h-screen bg-sand-50 flex flex-col transition-colors">
       {/* Header */}
       <header className="p-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-fairway-700 dark:text-fairway-400 hover:text-fairway-800 dark:hover:text-fairway-300"
+          className="inline-flex items-center gap-2 text-fairway-700 hover:text-fairway-800"
         >
-          <div className="w-10 h-10 rounded-xl bg-fairway-gradient dark:bg-fairway-gradient-dark flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-fairway-gradient flex items-center justify-center">
             <Flag className="w-5 h-5 text-white" />
           </div>
           <span className="font-display text-xl font-bold">GolfnMe</span>
@@ -84,10 +84,10 @@ export default function LoginPage() {
           className="w-full max-w-md"
         >
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-sand-900 dark:text-sand-100 mb-2">
+            <h1 className="text-3xl font-bold text-sand-900 mb-2">
               Welcome back
             </h1>
-            <p className="text-sand-600 dark:text-sand-400">
+            <p className="text-sand-600">
               Sign in to track your golf game
             </p>
           </div>
@@ -97,10 +97,10 @@ export default function LoginPage() {
             <button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-sand-200 dark:border-dark-700 rounded-xl hover:bg-sand-50 dark:hover:bg-dark-800 transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-sand-200 rounded-xl hover:bg-sand-50 transition-colors disabled:opacity-50"
             >
-              <Chrome className="w-5 h-5 text-sand-600 dark:text-sand-400" />
-              <span className="font-medium text-sand-700 dark:text-sand-300">
+              <Chrome className="w-5 h-5 text-sand-600" />
+              <span className="font-medium text-sand-700">
                 Continue with Google
               </span>
             </button>
@@ -108,10 +108,10 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-sand-200 dark:border-dark-700" />
+                <div className="w-full border-t border-sand-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white dark:bg-dark-900 text-sand-500 dark:text-sand-400">
+                <span className="px-4 bg-white text-sand-500">
                   or continue with email
                 </span>
               </div>
@@ -122,7 +122,7 @@ export default function LoginPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-2 text-red-700 dark:text-red-400"
+                className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-700"
               >
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span className="text-sm">{authError}</span>
@@ -162,7 +162,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-sand-400 hover:text-sand-600 dark:hover:text-sand-300"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-sand-400 hover:text-sand-600"
                   >
                     {showPassword ? (
                       <EyeOff className="w-5 h-5" />
@@ -177,15 +177,15 @@ export default function LoginPage() {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    className="rounded border-sand-300 dark:border-dark-600 text-fairway-600 focus:ring-fairway-500 bg-white dark:bg-dark-800"
+                    className="rounded border-sand-300 text-fairway-600 focus:ring-fairway-500 bg-white"
                   />
-                  <span className="text-sand-600 dark:text-sand-400">
+                  <span className="text-sand-600">
                     Remember me
                   </span>
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-fairway-600 dark:text-fairway-400 hover:text-fairway-700 dark:hover:text-fairway-300 font-medium"
+                  className="text-fairway-600 hover:text-fairway-700 font-medium"
                 >
                   Forgot password?
                 </Link>
@@ -208,11 +208,11 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <p className="text-center mt-6 text-sand-600 dark:text-sand-400">
+          <p className="text-center mt-6 text-sand-600">
             Don't have an account?{" "}
             <Link
               href="/signup"
-              className="text-fairway-600 dark:text-fairway-400 hover:text-fairway-700 dark:hover:text-fairway-300 font-medium"
+              className="text-fairway-600 hover:text-fairway-700 font-medium"
             >
               Sign up free
             </Link>
@@ -221,7 +221,7 @@ export default function LoginPage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 text-center text-sm text-sand-500 dark:text-sand-500">
+      <footer className="p-6 text-center text-sm text-sand-500">
         © 2025 Fairway Golf Tracker. All rights reserved.
       </footer>
     </div>
