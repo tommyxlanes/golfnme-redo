@@ -82,25 +82,25 @@ export default function SettingsPage() {
     }
   };
 
-  const themeOptions = [
-    { value: "light", label: "Light", icon: Sun },
-    { value: "dark", label: "Dark", icon: Moon },
-    { value: "system", label: "System", icon: Monitor },
-  ];
+  // const themeOptions = [
+  //   { value: "light", label: "Light", icon: Sun },
+  //   { value: "dark", label: "Dark", icon: Moon },
+  //   { value: "system", label: "System", icon: Monitor },
+  // ];
 
   return (
-    <div className="min-h-screen bg-sand-50 dark:bg-[#001012] transition-colors">
+    <div className="min-h-screen bg-sand-50 transition-colors">
       {/* Header */}
-      <header className="bg-white dark:bg-dark-900 border-b border-sand-200 dark:border-dark-800 transition-colors">
+      <header className="bg-white border-b border-sand-200 transition-colors">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2 hover:bg-sand-100 dark:hover:bg-dark-800 rounded-lg transition-colors"
+              className="p-2 hover:bg-sand-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-sand-600 dark:text-sand-400" />
+              <ArrowLeft className="w-5 h-5 text-sand-600" />
             </button>
-            <h1 className="text-xl font-bold text-sand-900 dark:text-sand-100">
+            <h1 className="text-xl font-bold text-sand-900">
               Settings
             </h1>
           </div>
@@ -114,8 +114,8 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="card p-6"
         >
-          <h2 className="text-lg font-semibold text-sand-900 dark:text-sand-100 mb-6 flex items-center gap-2">
-            <User className="w-5 h-5 text-fairway-600 dark:text-fairway-400" />
+          <h2 className="text-lg font-semibold text-sand-900 mb-6 flex items-center gap-2">
+            <User className="w-5 h-5 text-fairway-600" />
             Profile Information
           </h2>
 
@@ -143,7 +143,7 @@ export default function SettingsPage() {
                   name="email"
                   value={formData.email}
                   disabled
-                  className="input pl-12 bg-sand-50 dark:bg-dark-800 cursor-not-allowed"
+                  className="input pl-12 bg-sand-50 cursor-not-allowed"
                 />
               </div>
               <p className="text-xs text-sand-500 mt-1">
@@ -217,84 +217,35 @@ export default function SettingsPage() {
           transition={{ delay: 0.1 }}
           className="card p-6"
         >
-          <h2 className="text-lg font-semibold text-sand-900 dark:text-sand-100 mb-6 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-fairway-600 dark:text-fairway-400" />
+          <h2 className="text-lg font-semibold text-sand-900 mb-6 flex items-center gap-2">
+            <Bell className="w-5 h-5 text-fairway-600" />
             Preferences
           </h2>
 
           <div className="space-y-4">
             {/* Theme Selection */}
-            <div className="p-4 bg-sand-50 dark:bg-dark-800 rounded-xl">
+            <div className="p-4 bg-sand-50 rounded-xl">
               <div className="flex items-center gap-3 mb-4">
-                <Moon className="w-5 h-5 text-sand-500 dark:text-sand-400" />
+                <Moon className="w-5 h-5 text-sand-500" />
                 <div>
-                  <p className="font-medium text-sand-900 dark:text-sand-100">
+                  <p className="font-medium text-sand-900">
                     Appearance
                   </p>
-                  <p className="text-sm text-sand-500 dark:text-sand-400">
+                  <p className="text-sm text-sand-500">
                     Choose your preferred theme
                   </p>
                 </div>
               </div>
-
-              {mounted && (
-                <div className="grid grid-cols-3 gap-2">
-                  {themeOptions.map(({ value, label, icon: Icon }) => (
-                    <button
-                      key={value}
-                      onClick={() => setTheme(value)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                        theme === value
-                          ? "border-fairway-500 bg-fairway-50 dark:bg-fairway-900/30 dark:border-fairway-400"
-                          : "border-sand-200 dark:border-dark-700 hover:border-sand-300 dark:hover:border-dark-600"
-                      }`}
-                    >
-                      <Icon
-                        className={`w-5 h-5 ${
-                          theme === value
-                            ? "text-fairway-600 dark:text-fairway-400"
-                            : "text-sand-500 dark:text-sand-400"
-                        }`}
-                      />
-                      <span
-                        className={`text-sm font-medium ${
-                          theme === value
-                            ? "text-fairway-700 dark:text-fairway-400"
-                            : "text-sand-600 dark:text-sand-400"
-                        }`}
-                      >
-                        {label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {!mounted && (
-                <div className="grid grid-cols-3 gap-2">
-                  {themeOptions.map(({ value, label, icon: Icon }) => (
-                    <div
-                      key={value}
-                      className="flex flex-col items-center gap-2 p-3 rounded-xl border-2 border-sand-200 dark:border-dark-700"
-                    >
-                      <Icon className="w-5 h-5 text-sand-500 dark:text-sand-400" />
-                      <span className="text-sm font-medium text-sand-600 dark:text-sand-400">
-                        {label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
-            <label className="flex items-center justify-between p-4 bg-sand-50 dark:bg-dark-800 rounded-xl cursor-pointer">
+            <label className="flex items-center justify-between p-4 bg-sand-50 rounded-xl cursor-pointer">
               <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-sand-500 dark:text-sand-400" />
+                <Bell className="w-5 h-5 text-sand-500" />
                 <div>
-                  <p className="font-medium text-sand-900 dark:text-sand-100">
+                  <p className="font-medium text-sand-900">
                     Push Notifications
                   </p>
-                  <p className="text-sm text-sand-500 dark:text-sand-400">
+                  <p className="text-sm text-sand-500">
                     Get notified about game invites
                   </p>
                 </div>
@@ -308,18 +259,18 @@ export default function SettingsPage() {
                     notifications: e.target.checked,
                   })
                 }
-                className="w-5 h-5 rounded border-sand-300 dark:border-dark-600 text-fairway-600 focus:ring-fairway-500 bg-white dark:bg-dark-700"
+                className="w-5 h-5 rounded border-sand-300 text-fairway-600 focus:ring-fairway-500 bg-white"
               />
             </label>
 
-            <label className="flex items-center justify-between p-4 bg-sand-50 dark:bg-dark-800 rounded-xl cursor-pointer">
+            <label className="flex items-center justify-between p-4 bg-sand-50 rounded-xl cursor-pointer">
               <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-sand-500 dark:text-sand-400" />
+                <Mail className="w-5 h-5 text-sand-500" />
                 <div>
-                  <p className="font-medium text-sand-900 dark:text-sand-100">
+                  <p className="font-medium text-sand-900">
                     Email Updates
                   </p>
-                  <p className="text-sm text-sand-500 dark:text-sand-400">
+                  <p className="text-sm text-sand-500">
                     Receive weekly stats summary
                   </p>
                 </div>
@@ -333,7 +284,7 @@ export default function SettingsPage() {
                     emailUpdates: e.target.checked,
                   })
                 }
-                className="w-5 h-5 rounded border-sand-300 dark:border-dark-600 text-fairway-600 focus:ring-fairway-500 bg-white dark:bg-dark-700"
+                className="w-5 h-5 rounded border-sand-300 text-fairway-600 focus:ring-fairway-500 bg-white"
               />
             </label>
           </div>
@@ -346,30 +297,30 @@ export default function SettingsPage() {
           transition={{ delay: 0.2 }}
           className="card p-6"
         >
-          <h2 className="text-lg font-semibold text-sand-900 dark:text-sand-100 mb-6 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-fairway-600 dark:text-fairway-400" />
+          <h2 className="text-lg font-semibold text-sand-900 mb-6 flex items-center gap-2">
+            <Shield className="w-5 h-5 text-fairway-600" />
             Privacy & Security
           </h2>
 
           <div className="space-y-4">
-            <button className="w-full flex items-center justify-between p-4 bg-sand-50 dark:bg-dark-800 rounded-xl hover:bg-sand-100 dark:hover:bg-dark-700 transition-colors text-left">
+            <button className="w-full flex items-center justify-between p-4 bg-sand-50 rounded-xl hover:bg-sand-100 transition-colors text-left">
               <div>
-                <p className="font-medium text-sand-900 dark:text-sand-100">
+                <p className="font-medium text-sand-900">
                   Change Password
                 </p>
-                <p className="text-sm text-sand-500 dark:text-sand-400">
+                <p className="text-sm text-sand-500">
                   Update your password
                 </p>
               </div>
               <ArrowLeft className="w-5 h-5 text-sand-400 rotate-180" />
             </button>
 
-            <button className="w-full flex items-center justify-between p-4 bg-sand-50 dark:bg-dark-800 rounded-xl hover:bg-sand-100 dark:hover:bg-dark-700 transition-colors text-left">
+            <button className="w-full flex items-center justify-between p-4 bg-sand-50 rounded-xl hover:bg-sand-100 transition-colors text-left">
               <div>
-                <p className="font-medium text-sand-900 dark:text-sand-100">
+                <p className="font-medium text-sand-900">
                   Download My Data
                 </p>
-                <p className="text-sm text-sand-500 dark:text-sand-400">
+                <p className="text-sm text-sand-500">
                   Export all your golf data
                 </p>
               </div>
@@ -383,19 +334,19 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="card p-6 border border-red-200 dark:border-red-900/50"
+          className="card p-6 border border-red-200"
         >
-          <h2 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-red-600 mb-4 flex items-center gap-2">
             <Trash2 className="w-5 h-5" />
             Danger Zone
           </h2>
 
-          <p className="text-sand-600 dark:text-sand-400 mb-4">
+          <p className="text-sand-600 mb-4">
             Once you delete your account, there is no going back. Please be
             certain.
           </p>
 
-          <button className="btn border-2 border-red-500 dark:border-red-400 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+          <button className="btn border-2 border-red-500 text-red-600 hover:bg-red-50">
             Delete Account
           </button>
         </motion.section>

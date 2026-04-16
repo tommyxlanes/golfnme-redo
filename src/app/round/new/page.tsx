@@ -247,7 +247,7 @@ export default function NewRoundPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#001012]">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-fairway-gradient text-white">
         <div className="max-w-3xl mx-auto px-4 py-6">
@@ -280,7 +280,7 @@ export default function NewRoundPage() {
               placeholder="Search your courses..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input pl-12 dark:border-green-800"
+              className="input pl-12"
             />
           </div>
 
@@ -379,7 +379,7 @@ export default function NewRoundPage() {
                 className={`card p-4 text-center transition-all ${
                   weather === option.id
                     ? "ring-2 ring-fairway-500 bg-fairway-50"
-                    : "hover:bg-slate-50 dark:hover:bg-emerald-950"
+                    : "hover:bg-slate-50"
                 }`}
               >
                 <option.icon
@@ -405,7 +405,7 @@ export default function NewRoundPage() {
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Any notes about this round..."
             rows={3}
-            className="input resize-none dark:border-green-800"
+            className="input resize-none"
           />
         </section>
 
@@ -468,7 +468,7 @@ export default function NewRoundPage() {
           onClick={handleStartRound}
           disabled={!selectedCourse || createRoundMutation.isPending}
           className="btn btn-gold w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed
-          dark:border-2 dark:border-green-800"
+         "
         >
           {createRoundMutation.isPending ? (
             <span className="flex items-center justify-center gap-2">

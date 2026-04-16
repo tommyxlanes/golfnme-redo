@@ -123,10 +123,10 @@ export default function RoundSummaryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-sand-50 dark:bg-dark-950 flex items-center justify-center transition-colors">
+      <div className="min-h-screen bg-sand-50 flex items-center justify-center transition-colors">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-fairway-600 dark:text-fairway-400 mx-auto mb-4" />
-          <p className="text-sand-600 dark:text-sand-400">
+          <Loader2 className="w-8 h-8 animate-spin text-fairway-600 mx-auto mb-4" />
+          <p className="text-sand-600">
             Loading round summary...
           </p>
         </div>
@@ -136,9 +136,9 @@ export default function RoundSummaryPage() {
 
   if (error || !round) {
     return (
-      <div className="min-h-screen bg-sand-50 dark:bg-dark-950 flex items-center justify-center transition-colors">
+      <div className="min-h-screen bg-sand-50 flex items-center justify-center transition-colors">
         <div className="text-center">
-          <p className="text-red-500 dark:text-red-400 mb-4">
+          <p className="text-red-500 mb-4">
             {error || "Round not found"}
           </p>
           <button onClick={() => router.push("/")} className="btn btn-primary">
@@ -154,9 +154,9 @@ export default function RoundSummaryPage() {
     scoreToPar === 0 ? "E" : scoreToPar > 0 ? `+${scoreToPar}` : scoreToPar;
 
   return (
-    <div className="min-h-screen bg-sand-50 dark:bg-dark-950 transition-colors">
+    <div className="min-h-screen bg-sand-50 transition-colors">
       {/* Header */}
-      <header className="bg-fairway-gradient dark:bg-fairway-gradient-dark text-white">
+      <header className="bg-fairway-gradient text-white">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <button
             onClick={() => router.push("/")}
@@ -186,16 +186,16 @@ export default function RoundSummaryPage() {
           className="card p-8 text-center"
         >
           <div className="mb-6">
-            <div className="text-6xl font-bold text-sand-900 dark:text-sand-100 mb-2">
+            <div className="text-6xl font-bold text-sand-900 mb-2">
               {round.totalScore}
             </div>
             <div
               className={`inline-flex items-center gap-1 px-4 py-2 rounded-full text-lg font-semibold ${
                 scoreToPar < 0
-                  ? "bg-birdie/10 dark:bg-birdie/20 text-birdie dark:text-emerald-400"
+                  ? "bg-birdie/10 text-birdie"
                   : scoreToPar === 0
-                  ? "bg-par/10 dark:bg-par/20 text-par dark:text-gray-400"
-                  : "bg-bogey/10 dark:bg-bogey/20 text-bogey dark:text-amber-400"
+                  ? "bg-par/10 text-par"
+                  : "bg-bogey/10 text-bogey"
               }`}
             >
               {scoreToPar < 0 ? (
@@ -209,7 +209,7 @@ export default function RoundSummaryPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-6 text-sand-600 dark:text-sand-400 text-sm">
+          <div className="flex items-center justify-center gap-6 text-sand-600 text-sm">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               {round.course.city}, {round.course.state}
@@ -263,8 +263,8 @@ export default function RoundSummaryPage() {
           transition={{ delay: 0.2 }}
           className="card p-6"
         >
-          <h2 className="text-lg font-semibold text-sand-900 dark:text-sand-100 mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-fairway-600 dark:text-fairway-400" />
+          <h2 className="text-lg font-semibold text-sand-900 mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-fairway-600" />
             Scoring Breakdown
           </h2>
 
@@ -273,32 +273,32 @@ export default function RoundSummaryPage() {
               {
                 label: "Eagles",
                 value: round.stats.scoringBreakdown.eagles,
-                color: "bg-eagle dark:bg-blue-600 text-white",
+                color: "bg-eagle text-white",
               },
               {
                 label: "Birdies",
                 value: round.stats.scoringBreakdown.birdies,
-                color: "bg-birdie dark:bg-emerald-600 text-white",
+                color: "bg-birdie text-white",
               },
               {
                 label: "Pars",
                 value: round.stats.scoringBreakdown.pars,
-                color: "bg-par dark:bg-gray-600 text-white",
+                color: "bg-par text-white",
               },
               {
                 label: "Bogeys",
                 value: round.stats.scoringBreakdown.bogeys,
-                color: "bg-bogey dark:bg-amber-600 text-white",
+                color: "bg-bogey text-white",
               },
               {
                 label: "Doubles",
                 value: round.stats.scoringBreakdown.doubleBogeys,
-                color: "bg-double dark:bg-red-600 text-white",
+                color: "bg-double text-white",
               },
               {
                 label: "Worse",
                 value: round.stats.scoringBreakdown.worse,
-                color: "bg-worse dark:bg-orange-700 text-white",
+                color: "bg-worse text-white",
               },
             ].map((item) => (
               <div key={item.label} className="text-center">
@@ -307,7 +307,7 @@ export default function RoundSummaryPage() {
                 >
                   {item.value}
                 </div>
-                <div className="text-xs text-sand-600 dark:text-sand-400">
+                <div className="text-xs text-sand-600">
                   {item.label}
                 </div>
               </div>
@@ -322,8 +322,8 @@ export default function RoundSummaryPage() {
           transition={{ delay: 0.3 }}
           className="card p-6"
         >
-          <h2 className="text-lg font-semibold text-sand-900 dark:text-sand-100 mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5 text-fairway-600 dark:text-fairway-400" />
+          <h2 className="text-lg font-semibold text-sand-900 mb-4 flex items-center gap-2">
+            <Target className="w-5 h-5 text-fairway-600" />
             Par Performance
           </h2>
 
@@ -335,15 +335,15 @@ export default function RoundSummaryPage() {
             ].map((item) => (
               <div
                 key={item.par}
-                className="bg-sand-50 dark:bg-dark-800 rounded-xl p-4 text-center"
+                className="bg-sand-50 rounded-xl p-4 text-center"
               >
-                <div className="text-sm text-sand-500 dark:text-sand-400 mb-1">
+                <div className="text-sm text-sand-500 mb-1">
                   Par {item.par}s
                 </div>
-                <div className="text-2xl font-bold text-sand-900 dark:text-sand-100">
+                <div className="text-2xl font-bold text-sand-900">
                   {item.data.average || "-"}
                 </div>
-                <div className="text-xs text-sand-500 dark:text-sand-400">
+                <div className="text-xs text-sand-500">
                   avg ({item.data.count} holes)
                 </div>
               </div>
@@ -358,39 +358,39 @@ export default function RoundSummaryPage() {
           transition={{ delay: 0.4 }}
           className="card overflow-hidden"
         >
-          <div className="px-6 py-4 border-b border-sand-100 dark:border-dark-800">
-            <h2 className="text-lg font-semibold text-sand-900 dark:text-sand-100 flex items-center gap-2">
-              <Flag className="w-5 h-5 text-fairway-600 dark:text-fairway-400" />
+          <div className="px-6 py-4 border-b border-sand-100">
+            <h2 className="text-lg font-semibold text-sand-900 flex items-center gap-2">
+              <Flag className="w-5 h-5 text-fairway-600" />
               Full Scorecard
             </h2>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-sand-50 dark:bg-dark-800">
+              <thead className="bg-sand-50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-sand-500 dark:text-sand-400">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-sand-500">
                     Hole
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500 dark:text-sand-400">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500">
                     Par
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500 dark:text-sand-400">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500">
                     Yds
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500 dark:text-sand-400">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500">
                     Score
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500 dark:text-sand-400">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500">
                     +/-
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500 dark:text-sand-400">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500">
                     Putts
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500 dark:text-sand-400">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500">
                     FIR
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500 dark:text-sand-400">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-sand-500">
                     GIR
                   </th>
                 </tr>
@@ -403,17 +403,17 @@ export default function RoundSummaryPage() {
                   return (
                     <tr
                       key={hole.id}
-                      className="border-b border-sand-100 dark:border-dark-800 last:border-b-0"
+                      className="border-b border-sand-100 last:border-b-0"
                     >
                       <td className="px-3 py-3">
-                        <span className="w-7 h-7 rounded-full bg-fairway-100 dark:bg-fairway-900/40 text-fairway-700 dark:text-fairway-400 flex items-center justify-center text-sm font-medium">
+                        <span className="w-7 h-7 rounded-full bg-fairway-100 text-fairway-700 flex items-center justify-center text-sm font-medium">
                           {hole.holeNumber}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-center text-sand-600 dark:text-sand-400">
+                      <td className="px-3 py-3 text-center text-sand-600">
                         {hole.par}
                       </td>
-                      <td className="px-3 py-3 text-center text-sand-500 dark:text-sand-400 text-sm">
+                      <td className="px-3 py-3 text-center text-sand-500 text-sm">
                         {hole.yardage || "-"}
                       </td>
                       <td className="px-3 py-3 text-center">
@@ -421,22 +421,22 @@ export default function RoundSummaryPage() {
                           <span
                             className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${
                               diff !== null && diff <= -2
-                                ? "bg-eagle/20 dark:bg-blue-500/30 text-eagle dark:text-blue-400"
+                                ? "bg-eagle/20 text-eagle"
                                 : diff === -1
-                                ? "bg-birdie/20 dark:bg-emerald-500/30 text-birdie dark:text-emerald-400"
+                                ? "bg-birdie/20 text-birdie"
                                 : diff === 0
-                                ? "bg-par/20 dark:bg-gray-500/30 text-par dark:text-gray-400"
+                                ? "bg-par/20 text-par"
                                 : diff === 1
-                                ? "bg-bogey/20 dark:bg-amber-500/30 text-bogey dark:text-amber-400"
+                                ? "bg-bogey/20 text-bogey"
                                 : diff === 2
-                                ? "bg-double/20 dark:bg-red-500/30 text-double dark:text-red-400"
-                                : "bg-worse/20 dark:bg-orange-500/30 text-worse dark:text-orange-400"
+                                ? "bg-double/20 text-double"
+                                : "bg-worse/20 text-worse"
                             }`}
                           >
                             {score.strokes}
                           </span>
                         ) : (
-                          <span className="text-sand-400 dark:text-sand-500">
+                          <span className="text-sand-400">
                             -
                           </span>
                         )}
@@ -446,10 +446,10 @@ export default function RoundSummaryPage() {
                           <span
                             className={
                               diff < 0
-                                ? "text-birdie dark:text-emerald-400"
+                                ? "text-birdie"
                                 : diff === 0
-                                ? "text-sand-500 dark:text-sand-400"
-                                : "text-bogey dark:text-amber-400"
+                                ? "text-sand-500"
+                                : "text-bogey"
                             }
                           >
                             {diff === 0 ? "E" : diff > 0 ? `+${diff}` : diff}
@@ -458,7 +458,7 @@ export default function RoundSummaryPage() {
                           "-"
                         )}
                       </td>
-                      <td className="px-3 py-3 text-center text-sand-600 dark:text-sand-400">
+                      <td className="px-3 py-3 text-center text-sand-600">
                         {score?.putts ?? "-"}
                       </td>
                       <td className="px-3 py-3 text-center">
@@ -467,12 +467,12 @@ export default function RoundSummaryPage() {
                           <Circle
                             className={`w-4 h-4 mx-auto ${
                               score.fairwayHit
-                                ? "fill-birdie text-birdie dark:fill-emerald-500 dark:text-emerald-500"
-                                : "text-sand-300 dark:text-sand-600"
+                                ? "fill-birdie text-birdie"
+                                : "text-sand-300"
                             }`}
                           />
                         ) : (
-                          <span className="text-sand-300 dark:text-sand-600">
+                          <span className="text-sand-300">
                             -
                           </span>
                         )}
@@ -483,12 +483,12 @@ export default function RoundSummaryPage() {
                           <Circle
                             className={`w-4 h-4 mx-auto ${
                               score.greenInReg
-                                ? "fill-birdie text-birdie dark:fill-emerald-500 dark:text-emerald-500"
-                                : "text-sand-300 dark:text-sand-600"
+                                ? "fill-birdie text-birdie"
+                                : "text-sand-300"
                             }`}
                           />
                         ) : (
-                          <span className="text-sand-300 dark:text-sand-600">
+                          <span className="text-sand-300">
                             -
                           </span>
                         )}
@@ -497,43 +497,43 @@ export default function RoundSummaryPage() {
                   );
                 })}
               </tbody>
-              <tfoot className="bg-sand-50 dark:bg-dark-800 font-semibold">
+              <tfoot className="bg-sand-50 font-semibold">
                 <tr>
-                  <td className="px-3 py-3 text-sand-900 dark:text-sand-100">
+                  <td className="px-3 py-3 text-sand-900">
                     Total
                   </td>
-                  <td className="px-3 py-3 text-center text-sand-900 dark:text-sand-100">
+                  <td className="px-3 py-3 text-center text-sand-900">
                     {round.stats.coursePar}
                   </td>
-                  <td className="px-3 py-3 text-center text-sm text-sand-600 dark:text-sand-400">
+                  <td className="px-3 py-3 text-center text-sm text-sand-600">
                     {round.course.holes.reduce(
                       (sum, h) => sum + (h.yardage || 0),
                       0
                     )}
                   </td>
-                  <td className="px-3 py-3 text-center text-sand-900 dark:text-sand-100">
+                  <td className="px-3 py-3 text-center text-sand-900">
                     {round.totalScore}
                   </td>
                   <td className="px-3 py-3 text-center">
                     <span
                       className={
                         scoreToPar < 0
-                          ? "text-birdie dark:text-emerald-400"
+                          ? "text-birdie"
                           : scoreToPar === 0
-                          ? "text-sand-600 dark:text-sand-400"
-                          : "text-bogey dark:text-amber-400"
+                          ? "text-sand-600"
+                          : "text-bogey"
                       }
                     >
                       {scoreToParDisplay}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-center text-sand-900 dark:text-sand-100">
+                  <td className="px-3 py-3 text-center text-sand-900">
                     {round.totalPutts}
                   </td>
-                  <td className="px-3 py-3 text-center text-sand-900 dark:text-sand-100">
+                  <td className="px-3 py-3 text-center text-sand-900">
                     {round.fairwaysHit}
                   </td>
-                  <td className="px-3 py-3 text-center text-sand-900 dark:text-sand-100">
+                  <td className="px-3 py-3 text-center text-sand-900">
                     {round.greensInReg}
                   </td>
                 </tr>
@@ -550,10 +550,10 @@ export default function RoundSummaryPage() {
             transition={{ delay: 0.5 }}
             className="card p-6"
           >
-            <h2 className="text-lg font-semibold text-sand-900 dark:text-sand-100 mb-2">
+            <h2 className="text-lg font-semibold text-sand-900 mb-2">
               Notes
             </h2>
-            <p className="text-sand-600 dark:text-sand-400">{round.notes}</p>
+            <p className="text-sand-600">{round.notes}</p>
           </motion.div>
         )}
 
