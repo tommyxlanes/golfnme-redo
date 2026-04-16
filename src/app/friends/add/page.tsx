@@ -55,8 +55,8 @@ export default function AddFriendPage() {
       // Update UI
       setResults((prev) =>
         prev.map((u) =>
-          u.username === username ? { ...u, hasPendingRequest: true } : u
-        )
+          u.username === username ? { ...u, hasPendingRequest: true } : u,
+        ),
       );
     } catch (err) {
       setError("Request failed.");
@@ -66,7 +66,7 @@ export default function AddFriendPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#001012] p-6">
       <div className="max-w-xl mx-auto">
         <h1 className="text-3xl font-bold mb-2 text-sand-900">Add Friends</h1>
         <p className="text-sand-600 mb-6">
@@ -82,7 +82,7 @@ export default function AddFriendPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onBlur={search}
-            className="input pl-10 border-sand-300"
+            className="input pl-10 border-sand-300 dark:border-green-800"
           />
         </div>
 

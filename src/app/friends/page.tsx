@@ -27,7 +27,7 @@ export default function FriendsPage() {
   // UI state
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"friends" | "requests" | "find">(
-    "friends"
+    "friends",
   );
   const [selectedFriend, setSelectedFriend] = useState<any | null>(null);
 
@@ -125,9 +125,9 @@ export default function FriendsPage() {
   // UI RENDER
   // ============================================
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#001012]">
       {/* Header */}
-      <header className="bg-fairway-gradient text-white">
+      <header className="bg-fairway-gradient dark:bg-fairway-gradient-dark text-white">
         <div className="max-w-3xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-6">
             <button
@@ -197,7 +197,7 @@ export default function FriendsPage() {
                 placeholder="Search friends..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="input pl-12"
+                className="input pl-12 dark:border dark:border-green-800"
               />
             </div>
 
@@ -292,7 +292,7 @@ export default function FriendsPage() {
           <div className="space-y-4">
             <button
               onClick={() => router.push("/friends/add")}
-              className="btn btn-primary w-full"
+              className="btn btn-primary w-full rounded-xl dark:border-2 dark:border-green-800"
             >
               <UserPlus className="w-5 h-5" />
               Search for Friends

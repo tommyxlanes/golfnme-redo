@@ -1421,7 +1421,7 @@ function FriendsTab() {
         <input
           type="text"
           placeholder="Search friends by name or username..."
-          className="input pl-12"
+          className="input dark:border-green-800 pl-12"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />

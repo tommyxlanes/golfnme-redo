@@ -89,7 +89,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-sand-50 dark:bg-dark-950 transition-colors">
+    <div className="min-h-screen bg-sand-50 dark:bg-[#001012] transition-colors">
       {/* Header */}
       <header className="bg-white dark:bg-dark-900 border-b border-sand-200 dark:border-dark-800 transition-colors">
         <div className="max-w-3xl mx-auto px-4 py-4">

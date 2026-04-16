@@ -111,8 +111,11 @@ function scoreBg(scoreToPar: number) {
 function EmptyStats({ router }: { router: ReturnType<typeof useRouter> }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-      <div className="w-20 h-20 rounded-full bg-fairway-100 flex items-center justify-center mb-4">
-        <Flag className="w-10 h-10 text-fairway-500" />
+      <div
+        className="w-20 h-20 rounded-full bg-fairway-100 flex items-center justify-center mb-4
+      dark:bg-green-800/20"
+      >
+        <Flag className="w-10 h-10 text-fairway-500 dark:text-green-400" />
       </div>
       <h2 className="font-display text-xl font-bold text-sand-900 mb-2">
         No rounds yet
@@ -122,7 +125,7 @@ function EmptyStats({ router }: { router: ReturnType<typeof useRouter> }) {
       </p>
       <button
         onClick={() => router.push("/round/new")}
-        className="btn-primary px-6 py-3"
+        className="btn-primary px-6 py-3 dark:border-2 dark:border-green-800 rounded-xl"
       >
         Start a Round
       </button>
@@ -222,9 +225,9 @@ export default function StatsPage() {
   const chartRange = chartMax - chartMin || 10;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#001012]">
       {/* Header */}
-      <header className="bg-fairway-gradient text-white">
+      <header className="bg-fairway-gradient dark:bg-fairway-gradient-dark text-white">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-6">
             <button
