@@ -21,6 +21,7 @@ import {
   Trophy,
   BarChart3,
   Loader2,
+  MapPin,
 } from "lucide-react";
 import { Scorecard, MiniScorecard } from "@/components/scorecard";
 import { useActiveRoundStore } from "@/stores";
@@ -30,6 +31,7 @@ import {
   formatScoreToPar,
 } from "@/lib/golf-utils";
 import type { Round, Course, Hole, Score } from "@/types";
+import { LiveMap } from "@/components/LiveMap";
 
 export default function ActiveRoundPage() {
   const router = useRouter();
@@ -54,6 +56,8 @@ export default function ActiveRoundPage() {
   const [courseData, setCourseData] = useState<
     (Course & { holes: Hole[] }) | null
   >(null);
+
+  const [showMap, setShowMap] = useState(false);
 
   // Load round data from API
   useEffect(() => {
@@ -106,10 +110,10 @@ export default function ActiveRoundPage() {
 
           // Set current hole to next unplayed hole or last hole
           const playedHoles = new Set(
-            roundData.scores.map((s: any) => s.hole.holeNumber)
+            roundData.scores.map((s: any) => s.hole.holeNumber),
           );
           const nextHole = roundData.course.holes.find(
-            (h: Hole) => !playedHoles.has(h.holeNumber)
+            (h: Hole) => !playedHoles.has(h.holeNumber),
           );
           if (nextHole) {
             setCurrentHole(nextHole.holeNumber);
@@ -219,7 +223,7 @@ export default function ActiveRoundPage() {
   const handleAbandonRound = async () => {
     if (
       confirm(
-        "Are you sure you want to abandon this round? Your progress will be saved."
+        "Are you sure you want to abandon this round? Your progress will be saved.",
       )
     ) {
       try {
@@ -321,6 +325,18 @@ export default function ActiveRoundPage() {
         </div>
       </header>
 
+      <button
+        onClick={() => {
+          setShowMap(true);
+          setShowMenu(false);
+        }}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-full transition m-4 mb-0
+        bg-gradient-to-tl from-emerald-500 to-emerald-700 hover:shadow-md text-amber-200"
+      >
+        <MapPin className="w-4 h-4" />
+        <span className="text-xs font-semibold">Course View</span>
+      </button>
+
       {/* Menu Dropdown */}
       <AnimatePresence>
         {showMenu && (
@@ -338,6 +354,7 @@ export default function ActiveRoundPage() {
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors"
             >
               <BarChart3 className="w-5 h-5 text-sand-500" />
+
               <span className="text-sand-700">View Scorecard</span>
             </button>
             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors">
@@ -384,10 +401,22 @@ export default function ActiveRoundPage() {
           onHoleChange={setCurrentHole}
           onComplete={handleCompleteRound}
           coursePar={course.par}
+          courseId={courseData?.id}
+          onHoleParUpdate={(holeNumber, newPar) => {
+            setCourseData((prev) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                holes: prev.holes.map((h) =>
+                  h.holeNumber === holeNumber ? { ...h, par: newPar } : h,
+                ),
+              };
+            });
+          }}
         />
 
         {/* Hole Navigation Pills */}
-        <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-1 overflow-x-auto p-2 scrollbar-hide">
           {course.holes.map((h) => {
             const score = scores.get(h.id);
             const relativeScore = score
@@ -405,8 +434,8 @@ export default function ActiveRoundPage() {
                   currentHole === h.holeNumber
                     ? "bg-fairway-500 text-white ring-2 ring-fairway-500 ring-offset-2"
                     : score
-                    ? colorClass
-                    : "bg-sand-100 text-sand-500"
+                      ? colorClass
+                      : "bg-sand-100 text-sand-500"
                 }`}
               >
                 {score?.strokes || h.holeNumber}
@@ -457,6 +486,14 @@ export default function ActiveRoundPage() {
           </div>
         </div>
       </main>
+      {showMap && (
+        <LiveMap
+          onClose={() => setShowMap(false)}
+          courseLat={courseData?.latitude}
+          courseLng={courseData?.longitude}
+          courseName={courseData?.name}
+        />
+      )}
     </div>
   );
 }

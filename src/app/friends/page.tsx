@@ -15,9 +15,11 @@ import {
   Flag,
   Swords,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function FriendsPage() {
   const router = useRouter();
+  const { data: authSession } = useSession();
 
   // --- REAL DATA ---
   const [friends, setFriends] = useState<any[]>([]);
@@ -34,28 +36,51 @@ export default function FriendsPage() {
   // ============================================
   // FETCH FRIENDS + REQUESTS
   // ============================================
-  useEffect(() => {
-    async function load() {
-      try {
-        const [friendsRes, requestsRes] = await Promise.all([
-          fetch("/api/friends"),
-          fetch("/api/friends?type=requests"),
-        ]);
-
-        const friendsData = await friendsRes.json();
-        const requestsData = await requestsRes.json();
-
-        setFriends(friendsData ?? []);
-        setRequests(requestsData ?? []);
-      } catch (e) {
-        console.error("Failed loading friends", e);
-      } finally {
-        setLoading(false);
-      }
+  const load = async () => {
+    try {
+      const [friendsRes, requestsRes] = await Promise.all([
+        fetch("/api/friends"),
+        fetch("/api/friends?type=requests"),
+      ]);
+      setFriends((await friendsRes.json()) ?? []);
+      setRequests((await requestsRes.json()) ?? []);
+    } catch (e) {
+      console.error("Failed loading friends", e);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    if (!authSession?.user?.id || !process.env.NEXT_PUBLIC_ABLY_KEY) return;
+
+    let channel: any = null;
+    let client: any = null;
+
+    async function connect() {
+      const Ably = (await import("ably")).default;
+      client = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_KEY });
+      channel = client.channels.get(`user:${authSession!.user!.id}`);
+      channel.subscribe("notification", (msg: any) => {
+        const { kind } = msg.data ?? {};
+        if (kind === "friend_request" || kind === "friend_accepted") {
+          load();
+          if (kind === "friend_request") setActiveTab("requests");
+        }
+      });
+    }
+
+    connect().catch(console.error);
+
+    return () => {
+      channel?.unsubscribe();
+      client?.close();
+    };
+  }, [authSession?.user?.id]);
 
   // ============================================
   // ACCEPT REQUEST
@@ -142,44 +167,54 @@ export default function FriendsPage() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2">
-            {[
-              {
-                id: "friends" as const,
-                label: "Friends",
-                count: friends.length,
-              },
-              {
-                id: "requests" as const,
-                label: "Requests",
-                count: requests.length,
-              },
-              { id: "find" as const, label: "Find Friends" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  activeTab === tab.id
-                    ? "bg-white text-fairway-700"
-                    : "bg-white/10 text-white hover:bg-white/20"
-                }`}
-              >
-                {tab.label}
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs ${
-                      activeTab === tab.id
-                        ? "bg-fairway-100 text-fairway-700"
-                        : "bg-white/20 text-white"
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
+          {/* Tabs + Add button */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex gap-2">
+              {[
+                {
+                  id: "friends" as const,
+                  label: "Friends",
+                  count: friends.length,
+                },
+                {
+                  id: "requests" as const,
+                  label: "Requests",
+                  count: requests.length,
+                },
+                { id: "find" as const, label: "Find Friends" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    activeTab === tab.id
+                      ? "bg-white text-fairway-700"
+                      : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
+                >
+                  {tab.label}
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs ${
+                        activeTab === tab.id
+                          ? "bg-fairway-100 text-fairway-700"
+                          : "bg-white/20 text-white"
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => router.push("/friends/add")}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 transition-colors text-sm font-medium whitespace-nowrap"
+            >
+              <UserPlus className="w-4 h-4" />
+              Add
+            </button>
           </div>
         </div>
       </header>

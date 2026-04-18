@@ -11,54 +11,52 @@ export default function AddFriendPage() {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  // Search users
-  const search = async () => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      return;
-    }
+  // Debounce search as you type
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (query.trim().length >= 2) search(query);
+      else setResults([]);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [query]);
 
+  const search = async (q: string) => {
     setLoading(true);
-
+    setError("");
     try {
-      const res = await fetch(`/api/friends/search?query=${query}`);
-
+      const res = await fetch(
+        `/api/friends/search?query=${encodeURIComponent(q)}`,
+      );
       if (!res.ok) throw new Error("Search failed");
-
       const data = await res.json();
       setResults(data.users ?? []);
-    } catch (err) {
+    } catch {
       setError("Failed to search users.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Send friend request
   const sendRequest = async (username: string) => {
     setSendingId(username);
     setError("");
-
     try {
       const res = await fetch("/api/friends", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error ?? "Failed to send request");
         return;
       }
-
-      // Update UI
       setResults((prev) =>
         prev.map((u) =>
           u.username === username ? { ...u, hasPendingRequest: true } : u,
         ),
       );
-    } catch (err) {
+    } catch {
       setError("Request failed.");
     } finally {
       setSendingId(null);
@@ -81,7 +79,6 @@ export default function AddFriendPage() {
             placeholder="Search by username..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onBlur={search}
             className="input pl-10 border-sand-300"
           />
         </div>
@@ -113,10 +110,20 @@ export default function AddFriendPage() {
               className="p-4 bg-white rounded-xl shadow-sm border border-sand-200 flex items-center justify-between"
             >
               <div className="flex items-center gap-4">
-                <img
-                  src={user.avatarUrl || "/default-avatar.png"}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-fairway-100 text-fairway-600 flex items-center justify-center font-semibold text-lg">
+                    {(user.name ?? user.username ?? "?")
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
+                )}
 
                 <div>
                   <p className="font-semibold text-sand-900">{user.name}</p>
@@ -130,7 +137,9 @@ export default function AddFriendPage() {
                   <Check className="w-4 h-4" /> Friends
                 </div>
               ) : user.hasPendingRequest ? (
-                <div className="text-sand-500 font-medium">Pending</div>
+                <div className="text-sand-500 py-1.5 px-3 bg-amber-50 rounded-lg">
+                  Pending
+                </div>
               ) : (
                 <button
                   disabled={sendingId === user.username}

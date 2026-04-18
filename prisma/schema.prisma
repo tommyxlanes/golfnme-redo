@@ -41,6 +41,7 @@ model User {
   chatMessages      ChatMessage[]
   accounts          Account[]
   sessions          Session[]
+  notifications     Notification[]
 
   @@index([email])
   @@index([username])
@@ -307,4 +308,23 @@ model ChatMessage {
   user    User         @relation(fields: [userId],    references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt])
+}
+
+// ============================================
+// Notification
+// ============================================
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  kind        String
+  title       String
+  body        String
+  actionUrl   String?
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt(sort: Desc)])
 }

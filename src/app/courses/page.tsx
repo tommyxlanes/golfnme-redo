@@ -17,6 +17,7 @@ import {
   Star,
   ChevronRight,
   Layers,
+  StarIcon,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────
@@ -54,29 +55,6 @@ interface GolfApiCourse {
 }
 
 // ─────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────
-function scoreLabel(par: number) {
-  if (par <= 68)
-    return { label: "Easy", color: "text-birdie" };
-  if (par <= 72)
-    return { label: "Standard", color: "text-sand-600" };
-  return { label: "Challenging", color: "text-bogey" };
-}
-
-function difficultyBar(slope: number | null) {
-  if (!slope) return null;
-  const pct = Math.min(((slope - 55) / (155 - 55)) * 100, 100);
-  const color =
-    slope < 120
-      ? "bg-birdie"
-      : slope < 135
-        ? "bg-bogey"
-        : "bg-double";
-  return { pct, color };
-}
-
-// ─────────────────────────────────────────────
 // Course Card
 // ─────────────────────────────────────────────
 function CourseCard({
@@ -88,8 +66,6 @@ function CourseCard({
   index: number;
   onClick: () => void;
 }) {
-  const diff = difficultyBar(course.slope);
-  const { label, color } = scoreLabel(course.par);
   const rounds = course._count?.rounds ?? 0;
 
   return (
@@ -133,8 +109,8 @@ function CourseCard({
               {course.numHoles} holes
             </span>
             {course.rating && (
-              <span className="text-xs bg-sand-100 text-sand-600 px-2 py-1 rounded-lg">
-                ⭐ {course.rating}
+              <span className="text-xs bg-sand-100 text-sand-600 px-2 py-1 rounded-lg flex items-center gap-2">
+                <Star className="h-3 w-3 text-amber-500" /> {course.rating}
               </span>
             )}
             {rounds > 0 && (
@@ -144,22 +120,10 @@ function CourseCard({
             )}
           </div>
 
-          {/* Slope difficulty bar */}
-          {diff && (
-            <div className="mt-3">
-              <div className="flex justify-between text-xs text-sand-500 mb-1">
-                <span>Slope {course.slope}</span>
-                <span className={color}>{label}</span>
-              </div>
-              <div className="h-1.5 bg-sand-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${diff.pct}%` }}
-                  transition={{ duration: 0.6, delay: index * 0.04 }}
-                  className={`h-full rounded-full ${diff.color}`}
-                />
-              </div>
-            </div>
+          {course.slope && (
+            <span className="flex items-center mt-2 w-fit text-xs bg-sand-100 text-sand-600 px-2 py-1 rounded-lg">
+              Slope Rating: {course.slope}
+            </span>
           )}
         </div>
       </div>
@@ -592,9 +556,7 @@ export default function CoursesPage() {
       <div className="sticky top-0 z-10 bg-sand-50/90 backdrop-blur-lg border-b border-sand-200 transition-colors">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-2">
           <Layers className="w-4 h-4 text-sand-400" />
-          <span className="text-xs text-sand-500 mr-1">
-            Sort:
-          </span>
+          <span className="text-xs text-sand-500 mr-1">Sort:</span>
           {(
             [
               { id: "rounds", label: "Most Played" },

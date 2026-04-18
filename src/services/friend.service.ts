@@ -9,8 +9,8 @@ import type { User } from "@prisma/client";
 
 export interface FriendInfo {
   id: string;
-  name: string;
-  username: string;
+  name: string | null;
+  username: string | null;
   avatarUrl: string | null;
   handicap: number | null;
   friendshipId: string;
@@ -32,6 +32,8 @@ export interface RequestsResult {
 export interface FriendActionResult {
   success: boolean;
   error?: string;
+  receiverId?: string;
+  senderId?: string;
 }
 
 export class FriendService {
@@ -78,7 +80,7 @@ export class FriendService {
    */
   async sendRequest(
     senderId: string,
-    receiverIdentifier: string
+    receiverIdentifier: string,
   ): Promise<FriendActionResult> {
     let receiver = null;
 
@@ -110,7 +112,7 @@ export class FriendService {
 
     const existingRequest = await friendRepository.findExistingRequest(
       senderId,
-      receiver.id
+      receiver.id,
     );
     if (existingRequest?.status === "PENDING") {
       if (existingRequest.senderId === receiver.id) {
@@ -119,9 +121,15 @@ export class FriendService {
       return { success: false, error: "Friend request already sent" };
     }
 
-    await friendRepository.createRequest(senderId, receiver.id);
+    // If old declined/cancelled request exists, reset to PENDING
+    // instead of inserting a duplicate (avoids unique constraint error)
+    if (existingRequest) {
+      await friendRepository.updateRequestStatus(existingRequest.id, "PENDING");
+    } else {
+      await friendRepository.createRequest(senderId, receiver.id);
+    }
 
-    return { success: true };
+    return { success: true, receiverId: receiver.id };
   }
 
   /**
@@ -129,7 +137,7 @@ export class FriendService {
    */
   async acceptRequest(
     requestId: string,
-    userId: string
+    userId: string,
   ): Promise<FriendActionResult> {
     const request = await friendRepository.findRequestById(requestId);
 
@@ -145,16 +153,14 @@ export class FriendService {
       return { success: false, error: "Request is not pending" };
     }
 
-    // Update request status
     await friendRepository.updateRequestStatus(requestId, "ACCEPTED");
 
-    // Create friendship
     await friendRepository.createFriendship(
       request.senderId,
-      request.receiverId
+      request.receiverId,
     );
 
-    return { success: true };
+    return { success: true, senderId: request.senderId }; // ← only this one
   }
 
   /**
@@ -162,7 +168,7 @@ export class FriendService {
    */
   async declineRequest(
     requestId: string,
-    userId: string
+    userId: string,
   ): Promise<FriendActionResult> {
     const request = await friendRepository.findRequestById(requestId);
 
@@ -188,7 +194,7 @@ export class FriendService {
    */
   async cancelRequest(
     requestId: string,
-    userId: string
+    userId: string,
   ): Promise<FriendActionResult> {
     const request = await friendRepository.findRequestById(requestId);
 
@@ -214,7 +220,7 @@ export class FriendService {
    */
   async removeFriend(
     userId: string,
-    friendId: string
+    friendId: string,
   ): Promise<FriendActionResult> {
     const areFriends = await friendRepository.areFriends(userId, friendId);
 
@@ -232,7 +238,7 @@ export class FriendService {
    */
   async searchUsers(
     query: string,
-    currentUserId: string
+    currentUserId: string,
   ): Promise<{ success: boolean; users?: any[]; error?: string }> {
     const users = await userRepository.findMany({ search: query, take: 20 });
 
@@ -243,11 +249,11 @@ export class FriendService {
         .map(async (u) => {
           const areFriends = await friendRepository.areFriends(
             currentUserId,
-            u.id
+            u.id,
           );
           const pendingRequest = await friendRepository.findExistingRequest(
             currentUserId,
-            u.id
+            u.id,
           );
 
           return {
@@ -260,7 +266,7 @@ export class FriendService {
             hasPendingRequest: pendingRequest?.status === "PENDING",
             requestSentByMe: pendingRequest?.senderId === currentUserId,
           };
-        })
+        }),
     );
 
     return { success: true, users: results };

@@ -15,38 +15,46 @@ interface NotificationPayload {
 function buildPayload(
   kind: NotificationKind,
   actor: { name: string } | null,
-  meta: Record<string, string | number | boolean> = {}
+  meta: Record<string, string | number | boolean> = {},
 ): NotificationPayload {
   switch (kind) {
     case "friend_request":
       return {
-        title:     "New friend request",
-        body:      `${actor?.name ?? "Someone"} sent you a friend request.`,
+        title: "New friend request",
+        body: `${actor?.name ?? "Someone"} sent you a friend request.`,
         actionUrl: "/friends",
       };
     case "friend_accepted":
       return {
-        title:     "Friend request accepted",
-        body:      `${actor?.name ?? "Someone"} accepted your friend request.`,
+        title: "Friend request accepted",
+        body: `${actor?.name ?? "Someone"} accepted your friend request.`,
         actionUrl: "/friends",
       };
     case "session_invite":
       return {
-        title:     "You've been invited",
-        body:      `${actor?.name ?? "Someone"} invited you to a round. Code: ${meta.inviteCode ?? "—"}`,
+        title: "You've been invited",
+        body: `${actor?.name ?? "Someone"} invited you to a round. Code: ${meta.inviteCode ?? "—"}`,
         actionUrl: "/session/join",
       };
     case "session_started":
       return {
-        title:     "Round started",
-        body:      `Your group round has started — good luck!`,
+        title: "Round started",
+        body: `Your group round has started — good luck!`,
         actionUrl: meta.sessionCode ? `/session/${meta.sessionCode}` : "/",
       };
     case "round_complete":
       return {
-        title:     "Round complete",
-        body:      `Your round is done. Final score: ${meta.totalScore ?? "—"}`,
+        title: "Round complete",
+        body: `Your round is done. Final score: ${meta.totalScore ?? "—"}`,
         actionUrl: meta.roundId ? `/round/${meta.roundId}/summary` : "/",
+      };
+    case "session_chat":
+      return {
+        title: `New message`,
+        body: meta.preview
+          ? `"${meta.preview}"`
+          : "Someone sent a message in your session.",
+        actionUrl: meta.sessionCode ? `/session/${meta.sessionCode}` : "/",
       };
     default:
       return { title: "Notification", body: "" };
@@ -59,7 +67,7 @@ function buildPayload(
 // Add email (Resend/Nodemailer) block below if needed.
 // ─────────────────────────────────────────────
 export const sendNotification: Processor<SendNotificationJob> = async (
-  job: Job<SendNotificationJob>
+  job: Job<SendNotificationJob>,
 ) => {
   const { kind, recipientId, actorId, meta = {} } = job.data;
   job.log(`Sending ${kind} notification to user ${recipientId}`);
@@ -67,12 +75,31 @@ export const sendNotification: Processor<SendNotificationJob> = async (
   // Fetch actor name if provided
   const actor = actorId
     ? await prisma.user.findUnique({
-        where:  { id: actorId },
+        where: { id: actorId },
         select: { name: true },
       })
     : null;
 
   const payload = buildPayload(kind, actor, meta);
+
+  // ── Save to DB first ───────────────────────
+  // This ensures notifications persist across page loads
+  try {
+    await prisma.notification.create({
+      data: {
+        userId: recipientId,
+        kind,
+        title: payload.title,
+        body: payload.body,
+        actionUrl: payload.actionUrl ?? null,
+        read: false,
+      },
+    });
+    job.log("Notification saved to DB");
+  } catch (err) {
+    job.log(`DB save failed: ${(err as Error).message}`);
+    // Non-fatal — still try Ably push
+  }
 
   // ── Ably push ──────────────────────────────
   // Each user has a personal channel: `user:{userId}`

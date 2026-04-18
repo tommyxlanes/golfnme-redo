@@ -13,6 +13,7 @@ import {
   Plus,
   Save,
   X,
+  Pencil,
 } from "lucide-react";
 import {
   getScoreRelativeToPar,
@@ -29,6 +30,8 @@ interface ScorecardProps {
   onHoleChange: (hole: number) => void;
   onComplete: () => void;
   coursePar: number;
+  courseId?: string;
+  onHoleParUpdate?: (holeNumber: number, newPar: number) => void;
 }
 
 export function Scorecard({
@@ -39,22 +42,27 @@ export function Scorecard({
   onHoleChange,
   onComplete,
   coursePar,
+  courseId,
+  onHoleParUpdate,
 }: ScorecardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(true);
+  const [editingPar, setEditingPar] = useState(false);
+  const [editParValue, setEditParValue] = useState(4);
+  const [savingPar, setSavingPar] = useState(false);
 
   const hole = holes.find((h) => h.holeNumber === currentHole);
   const existingScore = hole ? scores.get(hole.id) : undefined;
 
   const [strokes, setStrokes] = useState(
-    existingScore?.strokes ?? hole?.par ?? 4
+    existingScore?.strokes ?? hole?.par ?? 4,
   );
   const [putts, setPutts] = useState(existingScore?.putts ?? 2);
   const [fairwayHit, setFairwayHit] = useState(
-    existingScore?.fairwayHit ?? false
+    existingScore?.fairwayHit ?? false,
   );
   const [greenInReg, setGreenInReg] = useState(
-    existingScore?.greenInReg ?? false
+    existingScore?.greenInReg ?? false,
   );
 
   // Reset when hole changes
@@ -81,6 +89,28 @@ export function Scorecard({
 
   const scoreToPar =
     totalScore - totalPar + (existingScore ? 0 : strokes - (hole?.par ?? 0));
+
+  const handleSavePar = async () => {
+    if (!hole || !courseId) return;
+    setSavingPar(true);
+    try {
+      const res = await fetch(`/api/courses/${courseId}/holes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          holeNumber: hole.holeNumber,
+          par: editParValue,
+        }),
+      });
+      if (res.ok) {
+        onHoleParUpdate?.(hole.holeNumber, editParValue);
+        setStrokes(editParValue); // reset strokes to new par
+      }
+    } finally {
+      setSavingPar(false);
+      setEditingPar(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!hole) return;
@@ -139,7 +169,53 @@ export function Scorecard({
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-white/60 text-xs">Par</p>
-            <p className="text-2xl font-bold">{hole.par}</p>
+            {editingPar ? (
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <button
+                  onClick={() => setEditParValue((v) => Math.max(3, v - 1))}
+                  className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm"
+                >
+                  −
+                </button>
+                <span className="text-2xl font-bold w-8 text-center">
+                  {editParValue}
+                </span>
+                <button
+                  onClick={() => setEditParValue((v) => Math.min(6, v + 1))}
+                  className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm"
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setEditParValue(hole.par);
+                  setEditingPar(true);
+                }}
+                className="flex items-center justify-center gap-1 mx-auto"
+              >
+                <span className="text-2xl font-bold">{hole.par}</span>
+                <Pencil className="w-4 h-4 opacity-50" />
+              </button>
+            )}
+            {editingPar && (
+              <div className="flex gap-1 justify-center mt-1">
+                <button
+                  onClick={handleSavePar}
+                  disabled={savingPar}
+                  className="text-xs bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-full transition-colors"
+                >
+                  {savingPar ? "…" : "Save"}
+                </button>
+                <button
+                  onClick={() => setEditingPar(false)}
+                  className="text-xs text-white/60 hover:text-white px-2 py-0.5 rounded-full transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
           <div>
             <p className="text-white/60 text-xs">Yards</p>
@@ -190,8 +266,8 @@ export function Scorecard({
             {strokes === hole.par
               ? "Par"
               : strokes < hole.par
-              ? `${hole.par - strokes} under`
-              : `${strokes - hole.par} over`}
+                ? `${hole.par - strokes} under`
+                : `${strokes - hole.par} over`}
           </p>
         </div>
 
@@ -217,7 +293,7 @@ export function Scorecard({
                 >
                   {score}
                 </button>
-              )
+              ),
           )}
         </div>
 

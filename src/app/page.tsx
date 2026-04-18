@@ -34,6 +34,7 @@ import type {
   PaginatedResponse,
 } from "@/types";
 import Image from "next/image";
+import { NotificationBell } from "@/components/NotificationBell";
 
 // ============================================
 // TYPES - Matching stats.service.ts exactly
@@ -561,9 +562,14 @@ export default function DashboardPage() {
       <header className="bg-fairway-gradient text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center">
-                <Flag className="w-5 h-5" />
+            <div className="flex items-center gap-1">
+              <div className="relative w-10 h-10 rounded-xl flex items-center justify-center">
+                <Image
+                  src="/golf-me-logo.png"
+                  alt="GolfnMe"
+                  fill
+                  className="object-contain"
+                />
               </div>
               <span className="font-display text-xl font-semibold">
                 GolfnMe
@@ -571,6 +577,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-4">
+              <NotificationBell />
               <UserMenu />
             </div>
           </div>
@@ -760,9 +767,7 @@ function PlayTab() {
               <h3 className="font-display text-2xl font-semibold">
                 Group Compete
               </h3>
-              <p className="text-fairway-800/70 mt-1">
-                Real-time multiplayer
-              </p>
+              <p className="text-fairway-800/70 mt-1">Real-time multiplayer</p>
             </div>
           </div>
           <div className="p-6">
@@ -864,9 +869,7 @@ function QuickActionRow({
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-medium text-sand-900">{label}</p>
-        <p className="text-sm text-sand-500 truncate">
-          {description}
-        </p>
+        <p className="text-sm text-sand-500 truncate">{description}</p>
       </div>
       <ChevronRight className="w-5 h-5 text-sand-400" />
     </button>
@@ -907,6 +910,12 @@ function HistoryTab() {
         <h2 className="font-display text-2xl font-semibold text-sand-900">
           Round History
         </h2>
+        <button
+          onClick={() => router.push("/rounds")}
+          className="text-sm text-fairway-600 font-medium hover:underline flex items-center gap-1"
+        >
+          View All Rounds <ChevronRight className="w-4 h-4" />
+        </button>
         <div className="tab-nav">
           <button
             className={`tab-item ${filter === "all" ? "active" : ""}`}
@@ -1176,9 +1185,7 @@ function StatsTab() {
         <div className="space-y-4">
           {scoringData.map((item) => (
             <div key={item.name} className="flex items-center gap-4">
-              <span className="w-20 text-sm text-sand-600">
-                {item.name}
-              </span>
+              <span className="w-20 text-sm text-sand-600">{item.name}</span>
               <div className="flex-1 h-8 bg-sand-100 rounded-lg overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
@@ -1292,17 +1299,11 @@ function ParPerformanceCard({
           {par}
         </span>
       </div>
-      <p className="text-2xl font-bold text-sand-900">
-        {average.toFixed(2)}
-      </p>
-      <p className="text-sm text-sand-500">
-        Par {par} Average
-      </p>
+      <p className="text-2xl font-bold text-sand-900">{average.toFixed(2)}</p>
+      <p className="text-sm text-sand-500">Par {par} Average</p>
       <p
         className={`text-xs mt-1 ${
-          difference <= 0
-            ? "text-birdie"
-            : "text-bogey"
+          difference <= 0 ? "text-birdie" : "text-bogey"
         }`}
       >
         {difference > 0 ? "+" : ""}
@@ -1481,20 +1482,14 @@ function FriendsTab() {
                 )}
               </div>
               <div className="flex-1">
-                <p className="font-medium text-sand-900">
-                  {friend.name}
-                </p>
-                <p className="text-sm text-sand-500">
-                  @{friend.username}
-                </p>
+                <p className="font-medium text-sand-900">{friend.name}</p>
+                <p className="text-sm text-sand-500">@{friend.username}</p>
               </div>
               <div className="text-right">
                 <p className="font-mono text-sm font-medium text-fairway-600">
                   {friend.handicap?.toFixed(1) ?? "-"}
                 </p>
-                <p className="text-xs text-sand-500">
-                  Handicap
-                </p>
+                <p className="text-xs text-sand-500">Handicap</p>
               </div>
               <button
                 className="btn btn-outline px-4 py-2 text-sm"

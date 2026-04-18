@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"
+    />
+    <title>GolfnMe — Live Location</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --green: #065f46;
+        --green2: #1d5a3c;
+        --gold: #c9a227;
+        --gold2: #f9e582;
+        --glass: rgba(10, 15, 10, 0.82);
+        --font: "Plus Jakarta Sans", sans-serif;
+        --mono: "JetBrains Mono", monospace;
+      }
+      html,
+      body {
+        height: 100%;
+        background: #0a0f0a;
+        font-family: var(--font);
+        color: #fff;
+        overflow: hidden;
+      }
+      .app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        height: 100dvh;
+      }
+
+      /* Header */
+      .hdr {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #065f46, #022c22);
+        z-index: 1000;
+      }
+      .hdr-l {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+      }
+      .hdr h1 {
+        font-size: 17px;
+        font-weight: 800;
+      }
+      .hdr p {
+        font-size: 10px;
+        opacity: 0.6;
+        margin-top: 1px;
+      }
+      .live-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(5, 150, 105, 0.2);
+        border: 1px solid rgba(5, 150, 105, 0.4);
+        border-radius: 100px;
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #6ee7b7;
+      }
+      .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #6ee7b7;
+        animation: blink 1.2s ease-in-out infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+      .live-pill.searching {
+        color: #fbbf24;
+        border-color: rgba(251, 191, 36, 0.4);
+        background: rgba(251, 191, 36, 0.1);
+      }
+      .live-pill.searching .live-dot {
+        background: #fbbf24;
+      }
+      .live-pill.error {
+        color: #f87171;
+        border-color: rgba(248, 113, 113, 0.4);
+        background: rgba(248, 113, 113, 0.1);
+      }
+      .live-pill.error .live-dot {
+        background: #f87171;
+        animation: none;
+      }
+
+      /* Map */
+      .map-wrap {
+        flex: 1;
+        position: relative;
+        min-height: 0;
+      }
+      #map {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: #0d1a0d;
+      }
+      .leaflet-container {
+        background: #0d1a0d !important;
+      }
+
+      /* Info card */
+      .info {
+        position: absolute;
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        z-index: 500;
+        background: var(--glass);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px;
+        padding: 16px 18px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+      }
+      .ig {
+        text-align: center;
+      }
+      .ig .v {
+        font-family: var(--mono);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--gold2);
+        display: block;
+      }
+      .ig .l {
+        font-size: 10px;
+        opacity: 0.5;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+      }
+      .divider {
+        width: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 0 4px;
+      }
+      .info-bottom {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .coords {
+        font-family: var(--mono);
+        font-size: 10px;
+        opacity: 0.4;
+      }
+      .recenter-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--green);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        font-family: var(--font);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: all 0.15s;
+      }
+      .recenter-btn:active {
+        transform: scale(0.96);
+      }
+
+      /* Player marker */
+      .player-ring {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      .player-ring::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: rgba(110, 231, 183, 0.15);
+        animation: ripple 2s ease-out infinite;
+      }
+      .player-ring::after {
+        content: "";
+        position: absolute;
+        inset: 6px;
+        border-radius: 50%;
+        background: rgba(110, 231, 183, 0.1);
+        animation: ripple 2s ease-out 0.6s infinite;
+      }
+      @keyframes ripple {
+        0% {
+          transform: scale(1);
+          opacity: 0.8;
+        }
+        100% {
+          transform: scale(2.2);
+          opacity: 0;
+        }
+      }
+      .player-core {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--green2);
+        border: 3px solid #6ee7b7;
+        box-shadow:
+          0 0 0 2px rgba(110, 231, 183, 0.3),
+          0 3px 12px rgba(0, 0, 0, 0.6);
+        z-index: 1;
+        position: relative;
+      }
+
+      /* Accuracy circle */
+      .leaflet-interactive {
+        stroke: rgba(110, 231, 183, 0.4) !important;
+        fill: rgba(110, 231, 183, 0.06) !important;
+      }
+
+      /* Permission screen */
+      .perm {
+        position: absolute;
+        inset: 0;
+        z-index: 800;
+        background: linear-gradient(135deg, #0a1a0e, #001208);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+        text-align: center;
+        gap: 20px;
+      }
+      .perm-icon {
+        font-size: 56px;
+        margin-bottom: 4px;
+      }
+      .perm h2 {
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .perm p {
+        font-size: 14px;
+        opacity: 0.6;
+        max-width: 280px;
+        line-height: 1.5;
+      }
+      .perm-btn {
+        background: linear-gradient(135deg, var(--gold2), var(--gold));
+        color: #1a1200;
+        font-weight: 800;
+        font-size: 15px;
+        padding: 14px 32px;
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        font-family: var(--font);
+        -webkit-tap-highlight-color: transparent;
+      }
+      .perm-btn:active {
+        transform: scale(0.97);
+      }
+      .perm-note {
+        font-size: 11px;
+        opacity: 0.35;
+        max-width: 260px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="hdr">
+        <div class="hdr-l">
+          <div class="logo">⛳</div>
+          <div>
+            <h1>GolfnMe</h1>
+            <p>Live Location</p>
+          </div>
+        </div>
+        <div class="live-pill searching" id="pill">
+          <div class="live-dot"></div>
+          <span id="pill-text">Searching…</span>
+        </div>
+      </header>
+
+      <div class="map-wrap">
+        <div id="map"></div>
+
+        <!-- Permission / start screen -->
+        <div class="perm" id="perm">
+          <div class="perm-icon">📍</div>
+          <h2>Live Satellite View</h2>
+          <p>
+            See your real-time GPS position overlaid on satellite imagery —
+            right on the course.
+          </p>
+          <button class="perm-btn" onclick="startTracking()">
+            Enable Location
+          </button>
+          <p class="perm-note">
+            Your location is used only within this page and never stored.
+          </p>
+        </div>
+
+        <!-- Info card -->
+        <div class="info" id="info" style="display: none">
+          <div class="info-grid">
+            <div class="ig">
+              <span class="v" id="val-acc">—</span>
+              <span class="l">Accuracy (m)</span>
+            </div>
+            <div class="ig">
+              <span class="v" id="val-spd">—</span>
+              <span class="l">Speed (km/h)</span>
+            </div>
+            <div class="ig">
+              <span class="v" id="val-alt">—</span>
+              <span class="l">Altitude (m)</span>
+            </div>
+          </div>
+          <div class="info-bottom">
+            <div class="coords" id="coords">—</div>
+            <button class="recenter-btn" onclick="recenter()">⊕ Center</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Init map centered roughly on world view until GPS kicks in
+      const map = L.map("map", {
+        center: [36.5683, -121.9505],
+        zoom: 17,
+        zoomControl: false,
+        tap: true,
+      });
+
+      // Satellite tiles
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        { maxZoom: 20 },
+      ).addTo(map);
+
+      // Label overlay
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+        { maxZoom: 20, opacity: 0.45 },
+      ).addTo(map);
+
+      L.control.zoom({ position: "bottomright" }).addTo(map);
+
+      // Player marker
+      const playerIcon = L.divIcon({
+        className: "",
+        html: `<div class="player-ring"><div class="player-core"></div></div>`,
+        iconSize: [48, 48],
+        iconAnchor: [24, 24],
+      });
+
+      let playerMarker = null;
+      let accuracyCircle = null;
+      let watchId = null;
+      let firstFix = true;
+      let lastPos = null;
+
+      function startTracking() {
+        document.getElementById("perm").style.display = "none";
+        document.getElementById("info").style.display = "block";
+        setPill("searching", "Searching…");
+
+        if (!navigator.geolocation) {
+          setPill("error", "GPS unavailable");
+          return;
+        }
+
+        watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+          enableHighAccuracy: true,
+          maximumAge: 3000,
+          timeout: 15000,
+        });
+      }
+
+      function onPosition(pos) {
+        const {
+          latitude: lat,
+          longitude: lng,
+          accuracy,
+          speed,
+          altitude,
+        } = pos.coords;
+        lastPos = { lat, lng };
+
+        // Update marker
+        if (!playerMarker) {
+          playerMarker = L.marker([lat, lng], { icon: playerIcon }).addTo(map);
+        } else {
+          playerMarker.setLatLng([lat, lng]);
+        }
+
+        // Accuracy circle
+        if (!accuracyCircle) {
+          accuracyCircle = L.circle([lat, lng], {
+            radius: accuracy,
+            weight: 1,
+            color: "rgba(110,231,183,0.5)",
+            fillColor: "rgba(110,231,183,0.08)",
+            fillOpacity: 1,
+          }).addTo(map);
+        } else {
+          accuracyCircle.setLatLng([lat, lng]).setRadius(accuracy);
+        }
+
+        // Fly to location on first fix
+        if (firstFix) {
+          map.flyTo([lat, lng], 19, { duration: 1.5 });
+          firstFix = false;
+        }
+
+        // Update pill
+        setPill("live", "Live");
+
+        // Update info card
+        document.getElementById("val-acc").textContent = Math.round(accuracy);
+        document.getElementById("val-spd").textContent = speed
+          ? (speed * 3.6).toFixed(1)
+          : "0.0";
+        document.getElementById("val-alt").textContent = altitude
+          ? Math.round(altitude)
+          : "—";
+        document.getElementById("coords").textContent =
+          `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      }
+
+      function onError(err) {
+        const msgs = {
+          1: "Permission denied",
+          2: "Position unavailable",
+          3: "GPS timed out",
+        };
+        setPill("error", msgs[err.code] || "GPS error");
+      }
+
+      function recenter() {
+        if (lastPos) {
+          map.flyTo([lastPos.lat, lastPos.lng], 19, { duration: 0.8 });
+        }
+      }
+
+      function setPill(state, text) {
+        const pill = document.getElementById("pill");
+        pill.className = "live-pill " + state;
+        document.getElementById("pill-text").textContent = text;
+      }
+
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 150);
+    </script>
+  </body>
+</html>
