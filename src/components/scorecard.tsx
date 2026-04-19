@@ -46,7 +46,7 @@ export function Scorecard({
   onHoleParUpdate,
 }: ScorecardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showDetails, setShowDetails] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
   const [editingPar, setEditingPar] = useState(false);
   const [editParValue, setEditParValue] = useState(4);
   const [savingPar, setSavingPar] = useState(false);
@@ -169,53 +169,7 @@ export function Scorecard({
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-white/60 text-xs">Par</p>
-            {editingPar ? (
-              <div className="flex items-center justify-center gap-1 mt-1">
-                <button
-                  onClick={() => setEditParValue((v) => Math.max(3, v - 1))}
-                  className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm"
-                >
-                  −
-                </button>
-                <span className="text-2xl font-bold w-8 text-center">
-                  {editParValue}
-                </span>
-                <button
-                  onClick={() => setEditParValue((v) => Math.min(6, v + 1))}
-                  className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm"
-                >
-                  +
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setEditParValue(hole.par);
-                  setEditingPar(true);
-                }}
-                className="flex items-center justify-center gap-1 mx-auto"
-              >
-                <span className="text-2xl font-bold">{hole.par}</span>
-                <Pencil className="w-4 h-4 opacity-50" />
-              </button>
-            )}
-            {editingPar && (
-              <div className="flex gap-1 justify-center mt-1">
-                <button
-                  onClick={handleSavePar}
-                  disabled={savingPar}
-                  className="text-xs bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-full transition-colors"
-                >
-                  {savingPar ? "…" : "Save"}
-                </button>
-                <button
-                  onClick={() => setEditingPar(false)}
-                  className="text-xs text-white/60 hover:text-white px-2 py-0.5 rounded-full transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
+            <p className="text-2xl font-bold">{hole.par}</p>
           </div>
           <div>
             <p className="text-white/60 text-xs">Yards</p>

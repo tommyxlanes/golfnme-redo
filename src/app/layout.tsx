@@ -5,6 +5,10 @@ import { AuthHydration } from "@/components/AuthHydration";
 
 export const metadata: Metadata = {
   title: "Fairway | Golf Score Tracker",
+  icons: {
+    icon: [{ url: "/favicon.ico" }, { url: "/favicon.png", type: "image/png" }],
+    apple: "/apple-touch-icon.png",
+  },
   description:
     "Track your golf scores, compete with friends, and improve your game.",
 };

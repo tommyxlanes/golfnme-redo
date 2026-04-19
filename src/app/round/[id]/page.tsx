@@ -22,6 +22,8 @@ import {
   BarChart3,
   Loader2,
   MapPin,
+  Pencil,
+  MapPinned,
 } from "lucide-react";
 import { Scorecard, MiniScorecard } from "@/components/scorecard";
 import { useActiveRoundStore } from "@/stores";
@@ -58,6 +60,11 @@ export default function ActiveRoundPage() {
   >(null);
 
   const [showMap, setShowMap] = useState(false);
+  const [showEditHole, setShowEditHole] = useState(false);
+  const [editPar, setEditPar] = useState(4);
+  const [editYardage, setEditYardage] = useState("");
+  const [editHandicap, setEditHandicap] = useState("");
+  const [savingHole, setSavingHole] = useState(false);
 
   // Load round data from API
   useEffect(() => {
@@ -241,6 +248,55 @@ export default function ActiveRoundPage() {
     }
   };
 
+  const openEditHole = () => {
+    if (!hole) return;
+    setEditPar(hole.par);
+    setEditYardage(hole.yardage?.toString() ?? "");
+    setEditHandicap(hole.handicapRank?.toString() ?? "");
+    setShowEditHole(true);
+    setShowMenu(false);
+  };
+
+  const handleSaveHole = async () => {
+    if (!hole || !courseData?.id) return;
+    setSavingHole(true);
+    try {
+      const res = await fetch(`/api/courses/${courseData.id}/holes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          holeNumber: hole.holeNumber,
+          par: editPar,
+          yardage: editYardage ? parseInt(editYardage) : null,
+          handicapRank: editHandicap ? parseInt(editHandicap) : null,
+        }),
+      });
+      if (res.ok) {
+        setCourseData((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            holes: prev.holes.map((h) =>
+              h.holeNumber === hole.holeNumber
+                ? {
+                    ...h,
+                    par: editPar,
+                    yardage: editYardage ? parseInt(editYardage) : h.yardage,
+                    handicapRank: editHandicap
+                      ? parseInt(editHandicap)
+                      : h.handicapRank,
+                  }
+                : h,
+            ),
+          };
+        });
+        setShowEditHole(false);
+      }
+    } finally {
+      setSavingHole(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -283,16 +339,35 @@ export default function ActiveRoundPage() {
               <p className="text-white/60 text-xs">Par {course.par}</p>
             </div>
 
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-            >
-              {showMenu ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setShowMap(true);
+                  setShowMenu(false);
+                }}
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                title="Edit hole info"
+              >
+                <MapPin className="text-green-300 w-5 h-5" />
+              </button>
+              <button
+                onClick={openEditHole}
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                title="Edit hole info"
+              >
+                <Pencil className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                {showMenu ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Running Score Bar */}
@@ -325,18 +400,6 @@ export default function ActiveRoundPage() {
         </div>
       </header>
 
-      <button
-        onClick={() => {
-          setShowMap(true);
-          setShowMenu(false);
-        }}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-full transition m-4 mb-0
-        bg-gradient-to-tl from-emerald-500 to-emerald-700 hover:shadow-md text-amber-200"
-      >
-        <MapPin className="w-4 h-4" />
-        <span className="text-xs font-semibold">Course View</span>
-      </button>
-
       {/* Menu Dropdown */}
       <AnimatePresence>
         {showMenu && (
@@ -354,7 +417,6 @@ export default function ActiveRoundPage() {
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors"
             >
               <BarChart3 className="w-5 h-5 text-sand-500" />
-
               <span className="text-sand-700">View Scorecard</span>
             </button>
             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors">
@@ -486,6 +548,129 @@ export default function ActiveRoundPage() {
           </div>
         </div>
       </main>
+
+      {/* Edit Hole Modal */}
+      <AnimatePresence>
+        {showEditHole && hole && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowEditHole(false)}
+              className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+                {/* Modal Header */}
+                <div className="bg-fairway-gradient text-white px-6 py-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-display text-lg font-bold">
+                      Hole {hole.holeNumber}
+                    </p>
+                    <p className="text-white/60 text-xs">{course.name}</p>
+                  </div>
+                  <button
+                    onClick={() => setShowEditHole(false)}
+                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="p-6 space-y-5">
+                  {/* Par */}
+                  <div>
+                    <label className="block text-sm font-medium text-sand-700 mb-2">
+                      Par
+                    </label>
+                    <div className="flex items-center gap-3">
+                      {[3, 4, 5, 6].map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setEditPar(p)}
+                          className={`flex-1 py-3 rounded-xl text-lg font-bold transition-all ${
+                            editPar === p
+                              ? "bg-fairway-500 text-white shadow-md"
+                              : "bg-sand-100 text-sand-700 hover:bg-sand-200"
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Yardage */}
+                  <div>
+                    <label className="block text-sm font-medium text-sand-700 mb-2">
+                      Yardage
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 452"
+                      value={editYardage}
+                      onChange={(e) => setEditYardage(e.target.value)}
+                      className="input w-full"
+                    />
+                  </div>
+
+                  {/* Handicap Rank */}
+                  <div>
+                    <label className="block text-sm font-medium text-sand-700 mb-2">
+                      Handicap Rank{" "}
+                      <span className="text-sand-400 font-normal">(1–18)</span>
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 8"
+                      min={1}
+                      max={18}
+                      value={editHandicap}
+                      onChange={(e) => setEditHandicap(e.target.value)}
+                      className="input w-full"
+                    />
+                  </div>
+
+                  <p className="text-xs text-sand-400">
+                    Changes are saved for all players on this course.
+                  </p>
+
+                  <div className="flex gap-3 pt-1">
+                    <button
+                      onClick={() => setShowEditHole(false)}
+                      className="btn btn-outline flex-1"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveHole}
+                      disabled={savingHole}
+                      className="btn btn-primary flex-1"
+                    >
+                      {savingHole ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Saving…
+                        </span>
+                      ) : (
+                        "Save"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {showMap && (
         <LiveMap
           onClose={() => setShowMap(false)}
