@@ -571,12 +571,12 @@ export default function DashboardPage() {
                   className="object-contain"
                 />
               </div>
-              <span className="font-display text-xl font-semibold">
+              <span className="hidden md:flex font-display text-xl font-semibold">
                 GolfnMe
               </span>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <NotificationBell />
               <UserMenu />
             </div>
@@ -906,35 +906,37 @@ function HistoryTab() {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-start md:items-center gap-4 md:gap-0 justify-between flex-col md:flex-row ">
         <h2 className="font-display text-2xl font-semibold text-sand-900">
           Round History
         </h2>
-        <button
-          onClick={() => router.push("/rounds")}
-          className="text-sm text-fairway-600 font-medium hover:underline flex items-center gap-1"
-        >
-          View All Rounds <ChevronRight className="w-4 h-4" />
-        </button>
-        <div className="tab-nav">
+        <div className="flex items-center gap-2">
           <button
-            className={`tab-item ${filter === "all" ? "active" : ""}`}
-            onClick={() => setFilter("all")}
+            onClick={() => router.push("/rounds")}
+            className="text-sm text-fairway-600 font-medium hover:underline flex items-center gap-1"
           >
-            All
+            View All Rounds <ChevronRight className="w-4 h-4" />
           </button>
-          <button
-            className={`tab-item ${filter === "solo" ? "active" : ""}`}
-            onClick={() => setFilter("solo")}
-          >
-            Solo
-          </button>
-          <button
-            className={`tab-item ${filter === "group" ? "active" : ""}`}
-            onClick={() => setFilter("group")}
-          >
-            Group
-          </button>
+          <div className="tab-nav">
+            <button
+              className={`tab-item ${filter === "all" ? "active" : ""}`}
+              onClick={() => setFilter("all")}
+            >
+              All
+            </button>
+            <button
+              className={`tab-item ${filter === "solo" ? "active" : ""}`}
+              onClick={() => setFilter("solo")}
+            >
+              Solo
+            </button>
+            <button
+              className={`tab-item ${filter === "group" ? "active" : ""}`}
+              onClick={() => setFilter("group")}
+            >
+              Group
+            </button>
+          </div>
         </div>
       </div>
 
