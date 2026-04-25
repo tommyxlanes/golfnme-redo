@@ -15,6 +15,7 @@ const loginSchema = z.object({
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // PrismaAdapter manages the Account, Session, and VerificationToken
   // tables in Postgres. Required for Google OAuth account linking.
+  trustHost: true,
   adapter: PrismaAdapter(prisma),
 
   // JWT strategy is required when using the Credentials provider alongside
@@ -30,7 +31,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   providers: [
     Google({
-      clientId:     process.env.GOOGLE_CLIENT_ID     ?? "",
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
       // Tell the adapter to always link accounts to an existing user by email
       // rather than creating duplicates when the same email signs in via Google
@@ -41,7 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       name: "credentials",
       credentials: {
-        email:    { label: "Email",    type: "email" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
@@ -49,15 +50,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!validated.success) return null;
 
         const { email, password } = validated.data;
-        const result = await authService.validateCredentials({ email, password });
+        const result = await authService.validateCredentials({
+          email,
+          password,
+        });
 
         if (!result.success || !result.user) return null;
 
         return {
-          id:       result.user.id,
-          email:    result.user.email,
-          name:     result.user.name,
-          image:    result.user.avatarUrl,
+          id: result.user.id,
+          email: result.user.email,
+          name: result.user.name,
+          image: result.user.avatarUrl,
           username: result.user.username,
           handicap: result.user.handicap,
         };
@@ -74,20 +78,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       // Only patch users that the adapter created without a username
       const dbUser = await prisma.user.findUnique({
-        where:  { id: user.id },
+        where: { id: user.id },
         select: { username: true },
       });
 
       if (dbUser?.username) return; // already set
 
       // Generate a unique username from their name or email prefix
-      const base = (user.name ?? user.email.split("@")[0])
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "")
-        .slice(0, 15) || "golfer";
+      const base =
+        (user.name ?? user.email.split("@")[0])
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "")
+          .slice(0, 15) || "golfer";
 
       let username = base;
-      let attempt  = 0;
+      let attempt = 0;
       while (await prisma.user.findUnique({ where: { username } })) {
         attempt++;
         username = `${base}${attempt}`;
@@ -95,38 +100,45 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       await prisma.user.update({
         where: { id: user.id },
-        data:  { username },
+        data: { username },
       });
     },
   },
 
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("golfnme://")) return url;
+      if (url.includes("api/auth/mobile/callback")) return url;
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (url.startsWith(baseUrl)) return url;
+      return baseUrl;
+    },
     async jwt({ token, user, account, trigger, session }) {
       // Initial sign-in — hydrate the token from the DB user
       if (account && user) {
         if (user.email) {
           const dbUser = await userRepository.findByEmail(user.email);
           if (dbUser) {
-            token.id       = dbUser.id;
+            token.id = dbUser.id;
             token.username = dbUser.username ?? "";
             token.handicap = dbUser.handicap ?? null;
-            token.picture  = dbUser.avatarUrl ?? null;
-            token.name     = dbUser.name;
-            token.email    = dbUser.email;
+            token.picture = dbUser.avatarUrl ?? null;
+            token.name = dbUser.name;
+            token.email = dbUser.email;
             return token;
           }
         }
 
         // Credentials fallback (user object already has everything)
-        token.id       = user.id ?? "";
+        token.id = user.id ?? "";
         token.username = (user as any).username ?? "";
         token.handicap = (user as any).handicap ?? null;
-        token.picture  = user.image ?? null;
+        token.picture = user.image ?? null;
       }
 
       // Session update trigger (e.g. profile edit)
       if (trigger === "update" && session) {
-        token.name     = session.name;
+        token.name = session.name;
         token.username = session.username ?? token.username;
         token.handicap = session.handicap ?? token.handicap;
         if (session.image) token.picture = session.image;
@@ -137,10 +149,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
     async session({ session, token }) {
       if (session.user) {
-        session.user.id       = (token.id       as string) ?? (token.sub as string) ?? "";
+        session.user.id = (token.id as string) ?? (token.sub as string) ?? "";
         session.user.username = (token.username as string) ?? "";
         session.user.handicap = (token.handicap as number) ?? null;
-        session.user.image    = (token.picture  as string) ?? null;
+        session.user.image = (token.picture as string) ?? null;
       }
       return session;
     },
@@ -154,7 +166,10 @@ export async function hashPassword(password: string): Promise<string> {
   return authService.hashPassword(password);
 }
 
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  hash: string,
+): Promise<boolean> {
   return authService.verifyPassword(password, hash);
 }
 
