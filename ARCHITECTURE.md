@@ -107,30 +107,49 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    subgraph CLIENT["Frontend (Next.js)"]
+    subgraph WEB["apps/web (Next.js)"]
         UI[React Components]
         STORE[Zustand Store]
-        SOCKET_CLIENT[Socket.io Client]
+        NEXTAUTH[NextAuth session cookie]
+        PROXY["/api/* proxy"]
     end
 
-    subgraph SERVER["Backend (Next.js API)"]
-        API[API Routes]
-        SOCKET_SERVER[Socket.io Server]
+    subgraph MOBILE["Expo app"]
+        RN[React Native UI]
     end
 
-    subgraph DB["Database"]
-        POSTGRES[(PostgreSQL)]
+    subgraph SERVER["apps/api (Hono)"]
+        API[REST routes]
+        WORKER[BullMQ worker]
+    end
+
+    subgraph DB["Data"]
         PRISMA[Prisma ORM]
+        POSTGRES[(PostgreSQL)]
+        REDIS[(Redis)]
     end
+
+    ABLY((Ably))
 
     UI <--> STORE
-    UI <--> API
-    STORE <--> SOCKET_CLIENT
-    SOCKET_CLIENT <-->|"Real-time Events"| SOCKET_SERVER
+    UI --> PROXY
+    NEXTAUTH -.->|"API token"| PROXY
+    PROXY -->|"Bearer token"| API
+    RN -->|"Bearer token"| API
     API <--> PRISMA
     PRISMA <--> POSTGRES
-    SOCKET_SERVER <--> PRISMA
+    API -->|"jobs"| REDIS
+    REDIS --> WORKER
+    WORKER <--> PRISMA
+    WORKER -->|"leaderboard, notifications"| ABLY
+    ABLY -.->|"Real-time Events"| UI
+    ABLY -.->|"Real-time Events"| RN
 ```
+
+The API is the only process that touches the database. Both clients sign in
+through it (`/api/auth/login`, `/api/auth/google`) and send the returned token
+as `Authorization: Bearer <token>`. See [README.md](README.md) for the endpoint
+list.
 
 ---
 

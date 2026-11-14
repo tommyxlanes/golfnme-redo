@@ -64,3 +64,5 @@ temp/
 # ===============================
 uploads/
 public/uploads/
+# Prisma (moved to apps/api)
+apps/api/prisma/migrations/**/migration_lock.toml
