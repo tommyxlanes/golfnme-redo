@@ -1,19 +1,36 @@
 version: "3.9"
 
 services:
-  app:
+  api:
     build:
       target: deps
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.next
-      - /app/node_modules/.prisma
+      - /app/apps/api/node_modules
+    working_dir: /app/apps/api
     environment:
       NODE_ENV: development
-    command: sh -c "npx prisma generate && npm run dev"
+    entrypoint: []
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npx tsx watch src/server.ts"
     healthcheck:
       disable: true
+
+  web:
+    build:
+      target: deps
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/.next
+    environment:
+      NODE_ENV: development
+    command: npm run dev -w @golfnme/web
+    healthcheck:
+      disable: true
+    depends_on:
+      api:
+        condition: service_started
 
   worker:
     build:
@@ -21,16 +38,20 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/node_modules/.prisma
+      - /app/apps/api/node_modules
+    working_dir: /app/apps/api
     environment:
       NODE_ENV: development
-    command: sh -c "npx prisma generate && node_modules/.bin/tsx --watch worker/worker.ts"
+    entrypoint: []
+    command: sh -c "npx prisma generate && npx tsx watch src/worker/worker.ts"
+    healthcheck:
+      disable: true
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-      app:
+      api:
         condition: service_started # ← replaces service_healthy
 
   pgadmin:

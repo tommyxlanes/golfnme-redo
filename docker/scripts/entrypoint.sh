@@ -2,14 +2,10 @@
 # docker/scripts/entrypoint.sh
 #
 # Runs as the container's CMD wrapper.
-# Handles the migrate-then-start pattern so the app never boots
+# Used by the API container (apps/api/Dockerfile, WORKDIR /app/apps/api).
+# Handles the migrate-then-start pattern so the API never boots
 # against an un-migrated schema.
 #
-# Usage in Dockerfile:
-#   COPY docker/scripts/entrypoint.sh /entrypoint.sh
-#   RUN chmod +x /entrypoint.sh
-#   ENTRYPOINT ["/entrypoint.sh"]
-#   CMD ["node_modules/.bin/tsx", "server.ts"]
 
 set -e
 

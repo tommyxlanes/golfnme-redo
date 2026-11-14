@@ -1,14 +1,31 @@
 version: "3.9"
 
-x-app-env: &app-env
+# The API and the worker share one image and one environment.
+x-api-env: &api-env
   DATABASE_URL: postgresql://golf:${POSTGRES_PASSWORD}@pgbouncer:6432/golfnme?schema=public&pgbouncer=true&connection_limit=1
+  # Signs the Bearer tokens. Defaults to NEXTAUTH_SECRET so tokens issued
+  # before the API was split out stay valid.
+  JWT_SECRET: ${JWT_SECRET:-${NEXTAUTH_SECRET}}
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+  # Extra Google client IDs (iOS / Android) allowed on /api/auth/google
+  GOOGLE_CLIENT_IDS: ${GOOGLE_CLIENT_IDS:-}
+  GOLF_COURSE_API_KEY: ${GOLF_COURSE_API_KEY:-}
+  ABLY_API_KEY: ${ABLY_API_KEY:-}
+  # Avatar uploads (Google Cloud Storage)
+  GCS_BUCKET_NAME: ${GCS_BUCKET_NAME:-}
+  GCS_KEY_JSON: ${GCS_KEY_JSON:-}
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  CORS_ORIGINS: ${CORS_ORIGINS:-}
+  REDIS_URL: redis://redis:6379
+  NODE_ENV: ${NODE_ENV:-production}
+
+x-web-env: &web-env
+  API_URL: http://api:4000
   NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
   NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
   GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
   GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-  ABLY_API_KEY: ${ABLY_API_KEY:-}
   NEXT_PUBLIC_ABLY_KEY: ${NEXT_PUBLIC_ABLY_KEY:-}
-  REDIS_URL: redis://redis:6379
   NODE_ENV: ${NODE_ENV:-production}
 
 services:
@@ -82,19 +99,19 @@ services:
       - internal
 
   # ───────────────────────────────────────────
-  # Next.js App
-  # Runs: prisma migrate deploy → tsx server.ts
+  # API (Hono) — the only service that talks to Postgres
+  # Runs: prisma migrate deploy → tsx src/server.ts
   # ───────────────────────────────────────────
-  app:
+  api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: apps/api/Dockerfile
       target: runner
     restart: unless-stopped
     environment:
-      <<: *app-env
+      <<: *api-env
     ports:
-      - "3000:3000"
+      - "4000:4000"
     depends_on:
       pgbouncer:
         condition: service_healthy
@@ -105,36 +122,78 @@ services:
       - external
     healthcheck:
       test:
-        ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+        ["CMD-SHELL", "wget -qO- http://localhost:4000/api/health || exit 1"]
       interval: 20s
       timeout: 10s
       retries: 5
       start_period: 40s
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.golfnme-api.rule=Host(`${API_DOMAIN:-api.localhost}`)"
+      - "traefik.http.routers.golfnme-api.entrypoints=websecure"
+      - "traefik.http.routers.golfnme-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.golfnme-api.loadbalancer.server.port=4000"
+
+  # ───────────────────────────────────────────
+  # Web UI (Next.js) — no database access, proxies /api/* to the API
+  # ───────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: runner
+    restart: unless-stopped
+    environment:
+      <<: *web-env
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - internal
+      - external
+    healthcheck:
+      test:
+        ["CMD-SHELL", "wget -qO- http://localhost:3000/login > /dev/null || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    labels:
+      - "traefik.enable=true"
       - "traefik.http.routers.golfnme.rule=Host(`${APP_DOMAIN:-localhost}`)"
       - "traefik.http.routers.golfnme.entrypoints=websecure"
       - "traefik.http.routers.golfnme.tls.certresolver=letsencrypt"
+      - "traefik.http.services.golfnme.loadbalancer.server.port=3000"
 
   # ───────────────────────────────────────────
-  # BullMQ Worker
-  # Waits for app to be healthy (migrations done) before starting
+  # BullMQ Worker — same image as the API
+  # Waits for api to be healthy (migrations done) before starting
   # ───────────────────────────────────────────
   worker:
     build:
       context: .
-      dockerfile: Dockerfile.worker
+      dockerfile: apps/api/Dockerfile
       target: runner
     restart: unless-stopped
+    entrypoint: ["/worker-entrypoint.sh"]
+    command: ["npx", "--no-install", "tsx", "src/worker/worker.ts"]
     environment:
-      <<: *app-env
+      <<: *api-env
     depends_on:
-      app:
+      api:
         condition: service_healthy
       redis:
         condition: service_healthy
     networks:
       - internal
+    healthcheck:
+      test: ["CMD-SHELL", "node src/worker/health.js || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   # ───────────────────────────────────────────
   # Bull Board — queue dashboard (dev profile only)

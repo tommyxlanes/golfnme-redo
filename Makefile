@@ -2,7 +2,7 @@
 # Makefile — golfnme
 # ─────────────────────────────────────────────
 
-.PHONY: help dev prod build stop logs shell-app shell-worker \
+.PHONY: help dev prod build stop logs shell-api shell-web shell-worker \
         migrate migrate-create seed reset db-studio health
 
 # ─────────────────────────────────────────────
@@ -16,7 +16,8 @@ help:
 	@echo "    make dev            Start dev stack (hot reload, pgAdmin, Bull Board)"
 	@echo "    make stop           Stop all containers"
 	@echo "    make logs           Tail all container logs"
-	@echo "    make logs-app       Tail app logs only"
+	@echo "    make logs-api       Tail API logs only"
+	@echo "    make logs-web       Tail web logs only"
 	@echo "    make logs-worker    Tail worker logs only"
 	@echo ""
 	@echo "  Database"
@@ -31,9 +32,10 @@ help:
 	@echo "    make prod           Start production stack (detached)"
 	@echo ""
 	@echo "  Debug"
-	@echo "    make shell-app      sh into running app container"
+	@echo "    make shell-api      sh into running API container"
+	@echo "    make shell-web      sh into running web container"
 	@echo "    make shell-worker   sh into running worker container"
-	@echo "    make health         Hit /api/health"
+	@echo "    make health         Hit the API's /api/health"
 	@echo ""
 
 # ─────────────────────────────────────────────
@@ -51,8 +53,11 @@ stop:
 logs:
 	docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f
 
-logs-app:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f app
+logs-api:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f api
+
+logs-web:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f web
 
 logs-worker:
 	docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f worker
@@ -61,14 +66,14 @@ logs-worker:
 # Database
 # ─────────────────────────────────────────────
 migrate:
-	docker compose exec app npx prisma migrate deploy
+	docker compose exec api npx prisma migrate deploy
 
 # Usage: make migrate-create name=add_user_stats
 migrate-create:
-	docker compose exec app npx prisma migrate dev --name $(name)
+	docker compose exec api npx prisma migrate dev --name $(name)
 
 seed:
-	docker compose exec app npx tsx prisma/seed.ts
+	docker compose exec api npx tsx prisma/seed.ts
 
 # Full dev reset — nukes and recreates the DB
 reset:
@@ -77,11 +82,11 @@ reset:
 	docker compose exec postgres psql -U $${POSTGRES_USER:-golf} \
 		-c "DROP DATABASE IF EXISTS $${POSTGRES_DB:-golfnme};" \
 		-c "CREATE DATABASE $${POSTGRES_DB:-golfnme};"
-	docker compose exec app npx prisma migrate deploy
-	docker compose exec app npx tsx prisma/seed.ts
+	docker compose exec api npx prisma migrate deploy
+	docker compose exec api npx tsx prisma/seed.ts
 
 db-studio:
-	docker compose exec app npx prisma studio
+	docker compose exec api npx prisma studio
 
 # ─────────────────────────────────────────────
 # Production
@@ -98,11 +103,14 @@ prod-down:
 # ─────────────────────────────────────────────
 # Debug
 # ─────────────────────────────────────────────
-shell-app:
-	docker compose exec app sh
+shell-api:
+	docker compose exec api sh
+
+shell-web:
+	docker compose exec web sh
 
 shell-worker:
 	docker compose exec worker sh
 
 health:
-	curl -s http://localhost:3000/api/health | python3 -m json.tool
+	curl -s http://localhost:4000/api/health | python3 -m json.tool

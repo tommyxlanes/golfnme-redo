@@ -2,8 +2,8 @@
 # docker/scripts/worker-entrypoint.sh
 #
 # Worker variant — waits for Postgres to be reachable but does NOT
-# run migrations. The app container owns the migration step.
-# Worker depends_on app via healthcheck so by the time this runs,
+# run migrations. The api container owns the migration step.
+# Worker depends_on api via healthcheck so by the time this runs,
 # migrations are already applied.
 
 set -e
