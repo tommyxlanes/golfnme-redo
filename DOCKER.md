@@ -74,7 +74,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 | Web | http://localhost:3000 |
 | API | http://localhost:4000/api |
 | Bull Board | http://localhost:3001 |
-| pgAdmin | http://localhost:8081 (admin@admin.com / admin) |
+| pgAdmin | http://localhost:8085 (admin@admin.com / admin) |
 
 Connect pgAdmin to the `postgres` host on port `5432` using your `.env` credentials.
 

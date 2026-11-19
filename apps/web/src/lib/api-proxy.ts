@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { API_URL, getApiToken } from "@/lib/api";
+import { API_URL, expireSessionCookies, getApiToken } from "@/lib/api";
 
 // Forwards a request to the standalone API (apps/api) at the same path,
 // adding the signed-in user's Bearer token from their NextAuth cookie.
@@ -18,9 +18,9 @@ export async function proxy(req: NextRequest) {
     if (value) headers.set(name, value);
   }
 
-  const authorization =
-    req.headers.get("authorization") ??
-    (await getApiToken(req).then((t) => (t ? `Bearer ${t}` : null)));
+  const ownAuthorization = req.headers.get("authorization");
+  const sessionToken = ownAuthorization ? null : await getApiToken(req);
+  const authorization = ownAuthorization ?? (sessionToken ? `Bearer ${sessionToken}` : null);
   if (authorization) headers.set("authorization", authorization);
 
   const hasBody = req.method !== "GET" && req.method !== "HEAD";
@@ -45,8 +45,17 @@ export async function proxy(req: NextRequest) {
   const responseHeaders = new Headers(upstream.headers);
   for (const name of DROPPED_RESPONSE_HEADERS) responseHeaders.delete(name);
 
-  return new Response(upstream.body, {
+  const res = new Response(upstream.body, {
     status: upstream.status,
     headers: responseHeaders,
   });
+
+  // The API rejected the token from this browser's session, so the session
+  // is no use any more: sign the browser out rather than leave it looking
+  // signed in while every request fails.
+  if (sessionToken && upstream.status === 401) {
+    expireSessionCookies(req, res);
+  }
+
+  return res;
 }

@@ -53,3 +53,34 @@ export async function getApiToken(req: NextRequest): Promise<string | null> {
   }
   return null;
 }
+
+// Whether the API still accepts a token. NextAuth keeps the token for the
+// life of its cookie and never re-checks it, so a token the API has stopped
+// honouring (its signing secret changed, the user was deleted) would
+// otherwise be handed out until the cookie expires. An API outage is not a
+// verdict on the token, so only an explicit 401 counts as "no".
+export async function apiTokenIsValid(token: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    return res.status !== 401;
+  } catch {
+    return true;
+  }
+}
+
+// Sign the browser out by expiring NextAuth's session cookie(s) on `res`.
+// Large sessions are split into numbered chunks, so match by name.
+export function expireSessionCookies(req: NextRequest, res: Response) {
+  for (const { name } of req.cookies.getAll()) {
+    if (!name.includes("authjs.session-token")) continue;
+    // A __Secure- cookie can only be overwritten by a Secure one
+    const secure = name.startsWith("__Secure-") ? "; Secure" : "";
+    res.headers.append(
+      "Set-Cookie",
+      `${name}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${secure}`,
+    );
+  }
+}

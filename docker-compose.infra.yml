@@ -47,7 +47,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
-      - "8081:80"
+      - "8085:80" # 8081 is Expo's Metro port
     depends_on:
       postgres:
         condition: service_healthy

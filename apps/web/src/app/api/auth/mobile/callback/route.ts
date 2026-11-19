@@ -1,5 +1,5 @@
-import { NextRequest } from "next/server";
-import { getApiToken } from "@/lib/api";
+import { NextRequest, NextResponse } from "next/server";
+import { apiTokenIsValid, expireSessionCookies, getApiToken } from "@/lib/api";
 
 const DEFAULT_RETURN = "golfnme://login";
 
@@ -81,6 +81,17 @@ export async function GET(req: NextRequest) {
 
     if (!token) {
       return handOffPage(withParam(target, "error", "not_authenticated"), false);
+    }
+
+    // A browser can still hold a session whose API token is dead. Handing
+    // that to the app only produces "Unauthorized", so sign the browser out
+    // and send it through the login page again, back to this same URL.
+    if (!(await apiTokenIsValid(token))) {
+      const login = new URL("/login", req.url);
+      login.searchParams.set("callbackUrl", `${req.nextUrl.pathname}${req.nextUrl.search}`);
+      const res = NextResponse.redirect(login);
+      expireSessionCookies(req, res);
+      return res;
     }
 
     return handOffPage(withParam(target, "token", token), true);
